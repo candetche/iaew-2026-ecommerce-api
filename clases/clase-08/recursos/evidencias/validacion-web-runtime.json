@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-18T02:57:44.463Z",
+  "target": "paquete solucion-docente real, no servidor del spike",
+  "checks": [
+    {
+      "name": "Credencial sin acceso emite JWT sin permisos",
+      "passed": true
+    },
+    {
+      "name": "Servidor entregado descubre tres tools",
+      "passed": true
+    },
+    {
+      "name": "Resource entregado puede leerse por SDK",
+      "passed": true
+    },
+    {
+      "name": "Resource real leído por WebSocket",
+      "passed": true
+    },
+    {
+      "name": "Consulta web con modelo y API real",
+      "passed": true
+    },
+    {
+      "name": "Rechazo web no muta",
+      "passed": true
+    },
+    {
+      "name": "Confirmación web aprobada",
+      "passed": true
+    },
+    {
+      "name": "Replay real conserva clave",
+      "passed": true
+    },
+    {
+      "name": "Replay no duplica stock ni evento",
+      "passed": true
+    },
+    {
+      "name": "Worker procesa evento web real",
+      "passed": true
+    },
+    {
+      "name": "403 Auth0 real visible por WebSocket",
+      "passed": true
+    }
+  ],
+  "observations": [],
+  "restrictedScopes": [],
+  "queryCycleMs": 6916,
+  "confirmationCycleMs": 1302,
+  "success": true,
+  "approval": "automatizada por cliente de pruebas; no humana"
+}
