@@ -4,10 +4,10 @@
 
 Vas a conectar un asistente preparado con la API de pedidos mediante un servidor MCP. Primero vas a consultar un pedido y comprobar la salida; luego vas a observar una acción controlada, rechazarla y aprobarla explícitamente. El objetivo no es construir un chatbot desde cero, sino reconocer quién propone, valida, aprueba, autoriza y ejecuta.
 
-**Duración:** 45 minutos. **Modalidad:** individual.  
+**Duración:** 45 minutos. **Modalidad:** individual. **Entrega:** un `.zip` con el proyecto funcionando (ver [Entrega](#entrega)).  
 **Preparación obligatoria antes de clase:** [preparacion-entorno.md](preparacion-entorno.md) y [laboratorio/README.md](recursos/laboratorio/README.md).
 
-La guía usa el laboratorio local de la clase. Completá sus instrucciones, instalá las dependencias del paquete elegido y dejá la API de Clase 07 disponible antes de iniciar el cronómetro. La actividad no exige una cuenta paga de IA: si tu equipo no pasa el preflight de Ollama, usá el chat web en modo determinista y el ciclo de IA anotado que indica el README. Ese recorrido acredita MCP y los controles, pero no demuestra selección de herramientas por un modelo.
+La guía usa el laboratorio local de la clase. Completá sus instrucciones, instalá las dependencias del paquete elegido y dejá la API de Clase 07 disponible antes de iniciar el cronómetro. La actividad tiene un único recorrido obligatorio: chat web → host con Ollama y `llama3.2:3b` → cliente/servidor MCP → API real. No exige una cuenta paga de IA. El preflight debe aprobarse antes de iniciar; si falla, resolvé la preparación con el docente en un equipo que ejecute ese mismo recorrido.
 
 ## Qué está preparado y qué vas a completar
 
@@ -15,10 +15,10 @@ La [base `clase-08-inicio`](https://github.com/utn-frc-iaew/iaew-2026-ecommerce-
 
 - un armazón en `recursos/laboratorio/inicio/`;
 - una resolución docente en `recursos/laboratorio/solucion-docente/`;
-- un único mapeo de consulta por completar en el armazón;
+- tres fragmentos de `src/server.js` que completás en el armazón, con el código indicado paso a paso en esta guía;
 - la interfaz web, el host, el cliente MCP, la aprobación, las herramientas de acción y las pruebas preparadas. No construís frontend ni infraestructura durante la práctica.
 
-Seguí el README del laboratorio para preparar el armazón y ubicar el mapeo indicado. No copies la solución docente sobre tu armazón. No edites la rama publicada `clase-08-inicio`.
+Seguí el README del laboratorio para preparar el armazón. Los tres fragmentos están marcados con `TODO T03-A`, `TODO T03-B` y `TODO T03-C`. No copies la solución docente sobre tu armazón. No edites la rama publicada `clase-08-inicio`.
 
 ## Contrato de la actividad
 
@@ -35,51 +35,83 @@ Seguí el README del laboratorio para preparar el armazón y ubicar el mapeo ind
 
 Los scopes y la aprobación resuelven controles distintos. La API de este laboratorio utiliza una identidad M2M de operador y no implementa autorización por dueño del pedido.
 
-## Mapa de flujo individual
-
-Completá este mapa mientras ejecutás los pasos 2 a 4. No suma tiempo ni requiere otra herramienta: registra lo que observaste en el laboratorio. En «control o evidencia», anotá qué comprobaste y en qué límite ocurre; no atribuyas autorización al modelo.
-
-| Momento | Quién actúa | Qué viaja o qué ocurre | Control o evidencia |
-|---|---|---|---|
-| La persona pide consultar el pedido |  |  |  |
-| Se propone una tool con argumentos |  |  |  |
-| Se descubre/invoca la capacidad MCP |  |  |  |
-| Se consulta la API |  |  |  |
-| El resultado vuelve y se responde |  |  |  |
-| Se solicita una confirmación y la persona aprueba o rechaza |  |  |  |
-| La API ejecuta o bloquea la operación |  |  |  |
-
-Marcá además quién consume el servidor MCP, dónde está el modelo y qué componente conserva las credenciales. Identificá WebSocket entre navegador y host (retomando Clase 04), MCP por stdio entre cliente y servidor, y HTTP/OAuth entre servidor y API. La conclusión debe distinguir petición, propuesta, ejecución y resultado observado.
-
 ## Recorrido de 45 minutos
 
-### 1. Preflight y recorrido elegido · 5 minutos
+### 1. Preflight del modelo local · 5 minutos
 
 1. Confirmá que la preparación previa está completa y que los servicios del laboratorio están disponibles.
 2. Verificá `GET /pedidos` con un cliente HTTP local configurado para `client_credentials`, según el README del laboratorio; compará solo el ID y el estado del pedido de prueba. No pegues ni compartas el token.
-3. Ejecutá el preflight del modelo local. Si no lo pasa, cambiá al cliente MCP determinista; no intentes resolverlo ampliando permisos.
-4. Con la API de Clase 07 activa en `http://127.0.0.1:3008`, iniciá desde `inicio/` el host preparado: `node --env-file=./config.local.env src/web.js` (agregá `--deterministic` si no usás modelo). Abrí `http://127.0.0.1:3018` y anotá el modo que muestra la interfaz. Las dependencias y `config.local.env` ya deben estar preparados.
+3. Ejecutá el preflight del modelo local. Debe aprobarse para continuar. Si falla, resolvé el entorno con el docente; no amplíes permisos ni sustituyas la inferencia por llamadas programadas.
+4. Con la API de Clase 07 activa en `http://127.0.0.1:3008`, iniciá desde `inicio/` el host preparado: `node --env-file=./config.local.env src/web.js`. Abrí `http://127.0.0.1:3018` y verificá que la interfaz muestre **Modelo local**. Las dependencias y `config.local.env` ya deben estar preparados.
 
-**Antes de continuar:** conocés si tu evidencia incluirá inferencia real o solo integración MCP.
+**Antes de continuar:** el modelo local pasó el preflight y el chat está conectado en modo **Modelo local**.
 
-### 2. Descubrir y consultar · 10 minutos
+### 2. Completar el servidor MCP y consultar · 10 minutos
 
-1. Identificá en el armazón las tools que descubre el host mediante su cliente MCP: `consultar_estado_pedido`, `listar_pedidos_pendientes` y `confirmar_pedido`. La interfaz web no es el servidor MCP.
-2. Completá el mapeo acotado de `consultar_estado_pedido` siguiendo el README: consultar la API existente, seleccionar el ID indicado y devolver solo el ID y el estado.
-3. Ejecutá `npm test` desde `inicio/` y comprobá que pase la suite del paquete. Antes de completar el mapeo son esperables exactamente dos fallas vinculadas a ese único TODO; después, no deberían quedar fallas. **Después de editar, detené el host con Ctrl+C, volvé a iniciarlo con el mismo comando del paso 1 y recargá la página.** El servidor MCP carga el código al conectarse; `npm test` no actualiza la sesión abierta.
-4. Escribí `pendientes` en el chat para ver qué pedidos hay disponibles; elegí uno de esa lista y escribí `consulta <ID>`, reemplazando `<ID>` por el identificador de un pedido de prueba conocido. Compará la tarjeta **Resultado autoritativo de la operación** con una consulta HTTP autorizada.
-5. Pulsá **Leer documentación de pedidos** para leer el resource `iaew://docs/pedidos` y explicá quién lo seleccionó. No supongas que el servidor lo agregó automáticamente al contexto.
+Todo el código de este paso va en `src/server.js`, dentro de `inicio/`. Antes de editar, ejecutá `npm test`: deben fallar exactamente 6 pruebas, porque faltan los tres fragmentos. Al terminar los tres pasos, la suite debe pasar completa (29/29).
 
-**Evidencia:** nombres de tools descubiertos, entrada y salida mínima de la consulta, diferencia entre tool y resource, y primeras filas del mapa de flujo. Identificá al host como consumidor MCP: el modelo no se conecta directamente al servidor.
+**Paso A · Proyectar la consulta (`TODO T03-A`).** Buscá la función `mapPedidoFromListado` al final del archivo y reemplazá su cuerpo. La API no tiene `GET /pedidos/{id}`: se pide el listado y el adaptador elige el pedido y devuelve solo ID y estado.
+
+```js
+export function mapPedidoFromListado(pedidos, pedidoId) {
+  const pedido = pedidos.find(item => item?._id === pedidoId);
+  if (!pedido || typeof pedido.estado !== 'string') return undefined;
+  return { pedidoId, estado: pedido.estado };
+}
+```
+
+**Paso B · Proyectar el listado (`TODO T03-C`).** Reemplazá la función `mapPendientesFromListado`, que está justo encima. Filtra los pendientes, limita la salida y no deja pasar ningún otro dato del pedido (emails, ítems, direcciones).
+
+```js
+export function mapPendientesFromListado(pedidos) {
+  const pendientes = pedidos
+   .filter(item => item?.estado === 'pendiente' && typeof item._id === 'string' && ORDER_ID.test(item._id))
+   .map(item => ({ pedidoId: item._id, estado: item.estado }));
+  return {
+    total: pendientes.length,
+    pedidos: pendientes.slice(0, MAX_PENDIENTES),
+    truncado: pendientes.length > MAX_PENDIENTES
+  };
+}
+```
+
+**Paso C · Registrar la tool de listado (`TODO T03-B`).** Dentro de `createMcpServer`, entre `consultar_estado_pedido` y `confirmar_pedido`, reemplazá el comentario `TODO T03-B` por este bloque. Una tool MCP se declara con nombre, descripción, schema de entrada y schema de salida; el listado no recibe argumentos y llama a la misma API existente.
+
+```js
+  server.registerTool('listar_pedidos_pendientes', {
+    description: 'Lista como máximo 10 pedidos en estado pendiente, solo con ID y estado. No recibe argumentos.',
+    inputSchema: {},
+    outputSchema: OUTPUT_SCHEMA
+  }, async (_args, extra) => {
+    const correlationId = typeof extra?._meta?.correlationId === 'string' && extra._meta.correlationId.length <= 64
+      ? extra._meta.correlationId : randomUUID();
+    const { response, payload, failure, ambiguous } = await api.request('/pedidos', {
+      correlationId, operation: 'listar_pedidos_pendientes'
+    });
+    if (failure) return result(errorResultForFailure(failure, 'listar_pedidos_pendientes', ambiguous), true);
+    if (!response.ok) return result(mapApiError(response.status, payload, 'listar_pedidos_pendientes'), true);
+    if (!Array.isArray(payload)) return result({ status: 'error', code: 'API_RESPONSE_INVALID' }, true);
+    return result({ status: 'ok',...mapPendientesFromListado(payload) });
+  });
+```
+
+**Comprobar.**
+
+1. Ejecutá `npm test`: deben pasar las 29 pruebas. Si falla alguna, leé el nombre de la prueba y revisá el paso correspondiente (consulta, listado o descubrimiento de tools).
+2. **Detené el host con Ctrl+C, volvé a iniciarlo con el mismo comando del paso 1 y recargá la página.** El servidor MCP carga el código al conectarse; `npm test` no actualiza la sesión abierta.
+3. Escribí `pendientes` en el chat, elegí un ID de esa lista y escribí `consulta <ID>`. Compará la tarjeta **Resultado autoritativo de la operación** con una consulta HTTP autorizada.
+4. Pulsá **Leer documentación de pedidos** para leer el resource `iaew://docs/pedidos` y explicá quién lo seleccionó. No supongas que el servidor lo agregó automáticamente al contexto.
+
+**Evidencia:** suite 29/29, nombres de las tres tools descubiertas, entrada y salida mínima de la consulta, y diferencia entre tool y resource. Identificá al host como consumidor MCP: el modelo no se conecta directamente al servidor.
 
 ### 3. Recorrer una intención sin inventar datos · 10 minutos
 
-1. Usá el chat con modelo si pasó el preflight; si no, usá el mismo chat en modo determinista y seguí el ejemplo anotado. La gramática admitida es `consulta <ID>` o `confirmar <ID>`; no es lenguaje natural irrestricto.
+1. Usá el chat web con Ollama y `llama3.2:3b` después de aprobar el preflight. La gramática admitida es `consulta <ID>` o `confirmar <ID>`; no es lenguaje natural irrestricto.
 2. Observá la propuesta estructurada para consultar el pedido y señalá qué valida el host antes de invocar MCP.
 3. Probá la interacción sin un ID suficiente: el host debe detenerse y pedir aclaración; no debe inventar un identificador ni invocar una acción.
 4. Compará el **Comentario opcional del asistente · no autoritativo** con la tarjeta de resultado y la API. El comentario generado puede fallar o contradecir el dato; nunca reemplaza la evidencia autoritativa.
 
-**Evidencia:** secuencia intención → propuesta → validación → llamada → resultado → respuesta, con el responsable de cada etapa. Aclarar si la selección de tool provino de una inferencia real o del cliente determinista.
+**Evidencia:** secuencia intención → propuesta → validación → llamada → resultado → respuesta, con el responsable de cada etapa, que vas a anotar en la nota de entrega. Registrá la propuesta generada por el modelo y comprobá que el host la validó antes de invocar MCP.
 
 ### 4. Rechazar, aprobar y repetir · 15 minutos
 
@@ -93,30 +125,61 @@ Marcá además quién consume el servidor MCP, dónde está el modelo y qué com
 
 **Evidencia:** rechazo sin mutación, aprobación vinculada, resultado confirmado y repetición idempotente; anotá el `correlationId` y el status HTTP observado, nunca secretos o datos crudos. No infieras garantías de concurrencia ni “exactamente una vez”.
 
-### 5. Explicar y guardar la evidencia · 5 minutos
+### 5. Nota y entrega · 5 minutos
 
-Guardá una nota individual breve, sin credenciales ni datos personales, que responda:
+Creá `nota.md` dentro de `inicio/`, sin credenciales ni datos personales, con estas dos partes.
+
+**Tabla del flujo observado.** Completala con lo que viste en los pasos 2 a 4; en «control o evidencia» anotá qué comprobaste y en qué límite ocurre, sin atribuir autorización al modelo.
+
+| Momento | Quién actúa | Qué viaja o qué ocurre | Control o evidencia |
+|---|---|---|---|
+| La persona pide consultar el pedido | | | |
+| El host valida la propuesta | | | |
+| Se invoca la tool MCP | | | |
+| Se consulta la API | | | |
+| El resultado vuelve y se responde | | | |
+| Se solicita confirmación y la persona aprueba o rechaza | | | |
+| La API ejecuta o bloquea | | | |
+
+**Respuestas breves.**
 
 1. ¿Qué aporta el modelo y qué estandariza MCP?
 2. ¿Quién consume MCP? ¿Cómo interactuás como usuario y dónde interviene el modelo?
-3. ¿Qué componentes, conexiones y permisos tuvieron que estar disponibles para que funcionara?
+3. ¿Qué componentes, conexiones y permisos tuvieron que estar disponibles para que funcionara? Ubicá WebSocket (navegador–host), stdio (cliente–servidor MCP) y HTTP/OAuth (servidor–API), y qué componente guarda las credenciales.
 4. ¿Quién propone, valida, aprueba, autoriza y ejecuta?
-5. ¿Qué evidencia demuestra que el rechazo no modificó el pedido? ¿Qué demostró tu recorrido: inferencia real, integración MCP determinista o ambos?
+5. ¿Qué evidencia demuestra que el rechazo no modificó el pedido y que la propuesta de herramienta provino del modelo local?
+
+## Entrega
+
+Entregá un único archivo `apellido-nombre-clase08.zip` con el contenido de `inicio/` ya completado:
+
+- `src/`, `public/`, `test/`, `fixtures/`, `package.json`, `package-lock.json`, `config.example.env` y los demás archivos del armazón;
+- `nota.md` con la tabla y las respuestas;
+- `resultado-tests.txt`, generado con `npm test > resultado-tests.txt 2>&1` (debe mostrar 29 pruebas aprobadas).
+
+Excluí `node_modules/`, `config.local.env` y cualquier `.env`. Desde `inicio/` en macOS o Linux:
+
+```bash
+npm test > resultado-tests.txt 2>&1
+zip -r apellido-nombre-clase08.zip. -x "node_modules/*" "config.local.env" ".env"
+```
+
+En Windows, comprimí la carpeta desde el explorador después de mover o borrar `node_modules` y `config.local.env`. Antes de enviar, abrí el zip y comprobá que no contiene credenciales. Para validar que funciona: descomprimilo en otra carpeta, ejecutá `npm ci` y `npm test`.
 
 ## Criterios de logro
 
-- La consulta devuelve únicamente ID y estado obtenidos de la API.
+- `npm test` pasa 29/29 con los tres fragmentos completados.
+- La consulta y el listado devuelven únicamente ID y estado obtenidos de la API.
 - Se explica la diferencia entre una tool y el resource seleccionado explícitamente.
-- El mapa distingue persona, host/cliente MCP, modelo, servidor MCP y API; ubica credenciales y aprobación donde corresponden.
+- La nota distingue persona, host/cliente MCP, modelo, servidor MCP y API; ubica credenciales y aprobación donde corresponden.
 - La entrada ambigua detiene el flujo y requiere aclaración.
 - El rechazo de aprobación no cambia el estado.
 - La confirmación aprobada preserva scopes e idempotencia.
-- La evidencia identifica el recorrido usado y no contiene secretos.
+- La evidencia acredita el recorrido completo con modelo local y no contiene secretos.
 
 ## Alcance y límites
 
-El laboratorio no agrega requisitos ni entregables al TPI. La actividad no prueba autorización por propietario, seguridad general frente a toda inyección, comportamiento concurrente ni entrega exactamente una vez. Una corrida MCP y otra Auth0 realizadas por separado no se deben presentar como una única ejecución end-to-end con modelo local.
+La actividad no prueba autorización por propietario, seguridad general frente a toda inyección, comportamiento concurrente ni entrega exactamente una vez. Una corrida MCP y otra Auth0 realizadas por separado no se deben presentar como una única ejecución end-to-end con modelo local.
 
-La terminal es una alternativa preparada, no otro ejercicio: `node --env-file=./config.local.env src/cli.js [--deterministic]` (el argumento entre corchetes es opcional). Sus comandos son `consulta <ID>`, `confirmar <ID>`, `documentacion`, `repetir <operationId>` y `salir`.
 
-No incluyas `.env`, tokens, claves de aprobación, emails, payloads completos ni capturas con secretos en tu entrega.
+El zip no debe incluir `.env`, `config.local.env`, tokens, claves de aprobación, emails ni payloads completos.

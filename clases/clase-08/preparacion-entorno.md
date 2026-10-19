@@ -1,6 +1,6 @@
 # Clase 08 — Preparación del modelo y del chat web local
 
-Completá esta preparación antes de la clase. La descarga del modelo y la instalación no forman parte de los 45 minutos de actividad. Si tu equipo no pasa la prueba, podrás usar el cliente MCP sin modelo; no necesitás una suscripción de IA.
+Completá esta preparación antes de la clase. La descarga del modelo y la instalación no forman parte de los 45 minutos de actividad. El modelo local es obligatorio y no requiere una suscripción paga. Si el preflight falla, resolvé la preparación con el docente antes de iniciar la actividad.
 
 ## 1. Identificá qué vas a instalar
 
@@ -69,8 +69,8 @@ Todavía falta la prueba integrada de la actividad: cliente MCP, servidor MCP y 
 - **No encuentra `ollama` o `node`:** cerrá y abrí la terminal después de instalar; comprobá que el programa esté disponible en ella.
 - **Conexión rechazada en el puerto 11434:** abrí Ollama o verificá su servicio. Cliente y servidor deben compartir el entorno de red previsto.
 - **Modelo no encontrado:** repetí la descarga antes de la clase y verificá el nombre exacto.
-- **Lentitud o falta de memoria:** cerrá aplicaciones que no uses y repetí la prueba con el entorno de laboratorio previsto. Si sigue fallando, usá la alternativa MCP sin modelo.
-- **Tool o ID incorrectos:** conservá el resultado y usá la alternativa; no se corrige concediendo más permisos al modelo.
+- **Lentitud o falta de memoria:** cerrá aplicaciones que no uses y repetí la prueba con el entorno de laboratorio previsto. Si sigue fallando, registrá el error y revisá con el docente un equipo preparado con el mismo modelo antes de iniciar la actividad.
+- **Tool o ID incorrectos:** conservá el resultado y corregí la preparación con el docente; no se corrige concediendo más permisos al modelo.
 
 Para liberar el modelo de memoria al terminar:
 
@@ -89,7 +89,7 @@ Fuentes de instalación: [inicio oficial](https://docs.ollama.com/quickstart), [
 
 ## 7. Iniciá el chat web del laboratorio
 
-Esta preparación se completa antes de los 45 minutos. La interfaz viene construida; durante la práctica solo completás el mapper del armazón. Iniciá primero la API de Clase 07 y sus dependencias según su guía; la API debe estar en `http://127.0.0.1:3008`.
+Esta preparación se completa antes de los 45 minutos. La interfaz viene construida; durante la práctica completás los tres fragmentos de `src/server.js` indicados en la actividad. Iniciá primero la API de Clase 07 y sus dependencias según su guía; la API debe estar en `http://127.0.0.1:3008`.
 
 Abrí una terminal dentro de `recursos/laboratorio/inicio/` (o `solucion-docente/` para el docente). Prepará `config.local.env` como indica el README del laboratorio. Instalá las dependencias locales con el lockfile:
 
@@ -98,13 +98,9 @@ npm ci --userconfig=./npm-user-empty.conf --globalconfig=./npm-global-empty.conf
 node --env-file=./config.local.env src/web.js
 ```
 
-Abrí `http://127.0.0.1:3018` en el navegador y verificá la conexión y el modo. Si no podés usar el modelo, detené el host y ejecutá la alternativa determinista:
+Abrí `http://127.0.0.1:3018` y verificá que la interfaz muestre **Modelo local**. Si no conecta o el modelo falla, resolvé ese problema antes de continuar con la actividad.
 
-```bash
-node --env-file=./config.local.env src/web.js --deterministic
-```
-
-Con las variables ya cargadas en el entorno también podés usar `npm run web` o `npm run web:deterministic`. `WEB_PORT=3018` es opcional y conserva el puerto predeterminado; si lo cambiás en `config.local.env`, abrí ese puerto. No cargues el archivo de credenciales de otra carpeta.
+Con las variables ya cargadas en el entorno también podés usar `npm run web`. `WEB_PORT=3018` es opcional y conserva el puerto predeterminado; si lo cambiás en `config.local.env`, abrí ese puerto. No cargues el archivo de credenciales de otra carpeta.
 
 El servicio escucha solo en `127.0.0.1`. No lo expongas por LAN. El navegador usa WebSocket con el host; MCP conserva stdio entre cliente y servidor, y la API conserva HTTP/OAuth. No copies tokens, secretos ni claves de aprobación al navegador o al chat.
 
@@ -112,14 +108,6 @@ Usá `consulta <ID>` o `confirmar <ID>` con un identificador real de prueba. **L
 
 Tras una confirmación exitosa, el botón **Repetir operación con la clave original** permite replay durante los 120 segundos de vigencia de esa confirmación. Escribir nuevamente `confirmar <ID>` crea una operación nueva. Ante timeout, `503` o desconexión, verificá el estado antes de cualquier nueva acción y no uses replay. La reconexión es manual y no reenvía operaciones.
 
-La terminal queda como alternativa:
 
-```bash
-node --env-file=./config.local.env src/cli.js
-# Alternativa sin modelo:
-node --env-file=./config.local.env src/cli.js --deterministic
-```
-
-Comandos de terminal: `consulta <ID>`, `confirmar <ID>`, `documentacion`, `repetir <operationId>` y `salir`. No se requiere construir otra interfaz ni sumar una entrega.
 
 Si el chat no conecta, comprobá que el host siga activo, que usás el puerto configurado y que la API haya iniciado antes. **Reconectar** abre una sesión nueva: no restaura aprobaciones ni repeticiones de la anterior. La evidencia de preparación no equivale a una corrida integrada: consultá la [validación web](validacion-web.md), con integración técnica comprobada y ensayo humano pendiente.

@@ -17,17 +17,14 @@ Iniciá primero la API de Clase 07 en el puerto `3008`. Prepará `config.local.e
 
 ```bash
 node --env-file=./config.local.env src/web.js
-# Alternativa sin inferencia de modelo:
-node --env-file=./config.local.env src/web.js --deterministic
 ```
 
-Abrí `http://127.0.0.1:3018`. La interfaz y el host están preparados: en los 45 minutos solo completás el mapper indicado. Escribí `consulta <ID>` o `confirmar <ID>`; el chat admite una gramática acotada. El botón **Leer documentación de pedidos** selecciona explícitamente el resource. **Aprobar** y **Rechazar** responden por la operación y el pedido mostrados; el backend valida la sesión y genera la firma. La tarjeta de resultado autoritativo queda separada del comentario opcional del modelo.
+Abrí `http://127.0.0.1:3018`. La interfaz y el host están preparados: en los 45 minutos completás los tres fragmentos indicados en la actividad. Escribí `consulta <ID>` o `confirmar <ID>`; el chat admite una gramática acotada. El botón **Leer documentación de pedidos** selecciona explícitamente el resource. **Aprobar** y **Rechazar** responden por la operación y el pedido mostrados; el backend valida la sesión y genera la firma. La tarjeta de resultado autoritativo queda separada del comentario opcional del modelo.
 
 Tras una confirmación exitosa, **Repetir operación con la clave original** permite una repetición explícita dentro de los 120 segundos de vigencia de esa confirmación. Escribir otra vez `confirmar <ID>` inicia una operación nueva: no es replay. No uses replay ante timeout, `503` o desconexión. Reconectar es manual y abre otra sesión.
 
 El navegador habla con el host por WebSocket, el cliente MCP con el servidor por stdio, y el servidor con la API por HTTP/OAuth. El primer tramo recupera lo visto en Clase 04 y no reemplaza los otros protocolos. El servicio escucha solo en `127.0.0.1`; los secretos permanecen en el backend, fuera del navegador y del modelo. No lo expongas por LAN.
 
-La terminal sigue disponible: `node --env-file=./config.local.env src/cli.js`, con `--deterministic` si corresponde. Admite `consulta <ID>`, `confirmar <ID>`, `documentacion`, `repetir <operationId>` y `salir`.
 
 ## Caso y límites
 
@@ -35,8 +32,8 @@ El laboratorio representa un operador M2M en un entorno didáctico aislado, no a
 
 La [rama `clase-08-inicio`](https://github.com/utn-frc-iaew/iaew-2026-ecommerce-api/tree/clase-08-inicio) contiene la Clase 07 resuelta. El armazón MCP y la solución docente están separados en el laboratorio, fuera de esa rama.
 
-Si el modelo local no pasa el preflight, la práctica se puede hacer con un cliente MCP determinista. Ese recorrido acredita MCP y los controles, no selección de herramientas por inferencia. La actividad no requiere suscripción de IA y no agrega requisitos al TPI.
+El modelo local es obligatorio. Si el preflight falla, corregí la preparación con el docente antes de iniciar. La actividad se completa con inferencia real y no requiere suscripción paga de IA.
 
 ## Estado del paquete
 
-El armazón estudiantil conserva un único mapper pendiente: 24/26 pruebas antes de resolverlo y 26/26 al completarlo. La solución pasó 26/26. La integración web con modelo local, MCP, Auth0 y API real pasó 11/11 comprobaciones. Consultá la [validación web](validacion-web.md): la aprobación fue automatizada; sigue pendiente el ensayo hablado de 15 minutos con una persona. No se presume validación con estudiantes ni en otros sistemas.
+El armazón estudiantil contiene tres fragmentos pendientes de `src/server.js`, explicados en la actividad. Antes de completarlos se esperan seis fallas; al resolverlos, la suite debe pasar 29/29. La resolución obligatoria usa modelo local, MCP y API real. La entrega es un ZIP del proyecto y su evidencia, según la guía de actividad. Las pruebas aisladas no sustituyen el recorrido integrado; consultá la [validación web](validacion-web.md) para distinguir la evidencia registrada del ensayo humano todavía pendiente.

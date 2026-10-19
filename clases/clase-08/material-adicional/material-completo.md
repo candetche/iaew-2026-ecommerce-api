@@ -8,7 +8,7 @@ El recorrido tiene una razón: la API crea pedidos y conserva su estado; la segu
 
 La API y sus reglas de negocio siguen siendo el centro. El modelo no se convierte en dueño del sistema, no obtiene permisos por conversar y no reemplaza la verificación del resultado. MCP agrega un protocolo para intercambiar capacidades entre aplicaciones; no reemplaza HTTP ni la autorización.
 
-Este material explica los conceptos y el contrato del caso. La actividad práctica tiene su propia guía: esta lectura no agrega pasos, entregas ni requisitos al práctico ni al TPI.
+Este material explica los conceptos y el contrato del caso. La actividad práctica tiene su propia guía: esta lectura no agrega pasos ni entregas al práctico.
 
 ## 1. Qué hace un modelo de lenguaje
 
@@ -238,7 +238,7 @@ La credencial M2M del caso representa a un servicio operador autorizado, no a un
 
 ## 10. Caminos opcionales para profundizar
 
-Las rutas siguientes son optativas. No reemplazan ni amplían la actividad práctica o los requisitos del TPI: elegí una pregunta si más adelante te interesa investigar el tema.
+Las rutas siguientes son optativas. No reemplazan ni amplían la actividad práctica: elegí una pregunta si más adelante te interesa investigar el tema.
 
 | Ruta y pregunta | Prerrequisitos | Dificultad | Costos o cargas posibles | Proyecto pequeño sugerido |
 |---|---|---|---|---|

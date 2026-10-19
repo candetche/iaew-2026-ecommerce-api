@@ -26,7 +26,7 @@ try {
     const first = await chat(messages, tools);
     const call = first.message.tool_calls?.length === 1 ? first.message.tool_calls[0] : undefined;
     if (call?.function?.name !== 'consultar_estado_pedido' || call.function.arguments?.pedidoId !== pedidoId) {
-      throw new Error('El modelo no seleccionó la herramienta y el ID esperados. Usá el recorrido sin modelo y conservá este resultado.');
+      throw new Error('El modelo no seleccionó la herramienta y el ID esperados. Conservá este resultado y corregí la preparación con el docente antes de iniciar la actividad.');
     }
     // La aplicación ejecuta aquí una fixture explícita, no una consulta a la API.
     messages.push(first.message, { role: 'tool', tool_name: 'consultar_estado_pedido',
@@ -40,7 +40,7 @@ try {
   }
   console.log(passed
     ? 'Preparación local aprobada: tres ciclos calientes correctos de hasta 15 segundos. No acredita MCP ni backend real.'
-    : 'Preparación local no aprobada: usá el recorrido MCP sin modelo. No descargues otro modelo durante la clase.');
+    : 'Preparación local no aprobada: corregí el entorno con el docente antes de iniciar. El modelo local es obligatorio.');
   if (!passed) process.exitCode = 1;
 } catch (error) {
   console.error(`Preparación no aprobada: ${error.message}`);
