@@ -40,7 +40,7 @@ export async function createWebServer({ port = 3018, deterministic = false,
     const asset = staticFiles.get(route);
     if (!asset) { res.writeHead(404); return res.end('No encontrado'); }
     try {
-      const body = await readFile(new URL(`../public/${asset[0]}`, import.meta.url));
+      const body = await readFile(new URL(`../chat-web/${asset[0]}`, import.meta.url));
       res.writeHead(200, {
         'Content-Type': asset[1], 'Cache-Control': 'no-store',
         'X-Content-Type-Options': 'nosniff',

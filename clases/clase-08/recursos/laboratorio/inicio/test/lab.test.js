@@ -6,13 +6,13 @@ import { randomUUID } from 'node:crypto';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { fileURLToPath } from 'node:url';
-import { parseIntent, validateProposal, createApproval, approvalForAnswer, verifyApproval } from '../src/security.js';
-import { runTurn } from '../src/host.js';
+import { parseIntent, validateProposal, createApproval, approvalForAnswer, verifyApproval } from '../compartido/security.js';
+import { runTurn } from '../host/host.js';
 
 const ORDER_ID = '507f1f77bcf86cd799439011';
 const OTHER_ID = '507f1f77bcf86cd799439012';
 const SECRET = randomUUID() + randomUUID();
-const SERVER_PATH = fileURLToPath(new URL('../src/server.js', import.meta.url));
+const SERVER_PATH = fileURLToPath(new URL('../servidor-mcp/server.js', import.meta.url));
 const directInjection = await readFile(new URL('../fixtures/direct-injection.txt', import.meta.url), 'utf8');
 const indirectFixture = JSON.parse(await readFile(new URL('../fixtures/indirect-injection.json', import.meta.url), 'utf8'));
 

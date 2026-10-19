@@ -3,7 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import { verifyApproval } from './security.js';
+import { verifyApproval } from '../compartido/security.js';
 
 const ORDER_ID = /^[a-f0-9]{24}$/;
 const API_TIMEOUT_MS = 5_000;

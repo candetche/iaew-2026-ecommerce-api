@@ -1,7 +1,0 @@
-node_modules/
-.npm-cache/
-config.local.env
-.env
-*.log
-datos-practica.json
-*.zip

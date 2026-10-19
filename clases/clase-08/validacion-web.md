@@ -25,3 +25,10 @@ Se extrajo una copia nueva del repositorio y se incorporaron los cambios locales
 Diez comprobaciones WebSocket con inferencia real aprobadas: resource, listado implementado desde el MD, consulta, aclaración de ID, rechazo sin mutación, aprobación, stock 10→8, replay con el mismo evento y procesamiento del worker. La aprobación fue automatizada, no humana. Se comprobó el comando ZIP y sus exclusiones. [Evidencia segura](recursos/evidencias/validacion-desde-cero.json).
 
 La actividad ahora incluye preparación completa en el mismo Markdown. Requiere herramientas instaladas, acceso de red y una identidad M2M autorizada que no se distribuye en Git. No se afirma una instalación limpia de cada sistema operativo ni una publicación remota de estos cambios locales. Los pasos de clase y pruebas se realizaron en copia temporal; el armazón distribuido conserva sus tres TODO.
+
+
+## Separación de componentes — 19/10/2026
+
+Inicio y solución distinguen `chat-web/`, `host/`, `servidor-mcp/` y `compartido/`. Se actualizaron imports, ruta del proceso MCP, archivos estáticos, scripts de npm, tests, actividad y notas. Sintaxis aprobada; solución 29/29; armazón 23/29 con las seis fallas previstas; copia temporal completada exclusivamente con los tres bloques del Markdown, 29/29. Se verificaron enlaces y sincronización con la fuente canónica.
+
+Prueba real adicional del nuevo árbol: el host sirvió HTML/JS/CSS desde `chat-web/`, aceptó WebSocket en modo modelo, inició el hijo `servidor-mcp/server.js` y obtuvo el pedido pendiente mediante Ollama, MCP y API/Auth0 reales. Consulta de lectura; no se modificó el pedido. La copia de demostración en `demo-clase-08` no se migró automáticamente. Este registro no acredita un ensayo humano de clase.

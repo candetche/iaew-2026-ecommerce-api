@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import WebSocket from 'ws';
-import { createWebServer } from '../src/web.js';
-import { verifyApproval } from '../src/security.js';
-import { runTurn, replayOperation } from '../src/host.js';
+import { createWebServer } from '../host/web.js';
+import { verifyApproval } from '../compartido/security.js';
+import { runTurn, replayOperation } from '../host/host.js';
 const ID = '507f1f77bcf86cd799439011';
 const packet = (type, data = {}, id = randomUUID()) => ({ version: 1, type, requestId: id, ...data });
 function setup() {

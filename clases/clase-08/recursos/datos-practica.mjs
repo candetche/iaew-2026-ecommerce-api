@@ -15,7 +15,17 @@ async function request(url, options = {}) {
   let response;
   try { response = await fetch(url, { ...options, signal: AbortSignal.timeout(20000) }); }
   catch { throw new Error('Sin conexión o timeout: comprobá servicio, red y puertos. No repitas una mutación sin revisar el estado.'); }
-  if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.status === 401 ? 'revisá dominio, audience y credenciales' : response.status === 403 ? 'revisá scopes autorizados de la aplicación M2M' : 'revisá los servicios y sus logs'}.`);
+  if (!response.ok) {
+    const target = new URL(url);
+    const local = target.origin === base.origin;
+    const stage = local ? `API ${options.method || 'GET'} ${target.pathname}` : 'Auth0 POST /oauth/token';
+    let hint = 'revisá los servicios y sus logs';
+    if (!local) hint = 'revisá que dominio, client ID y client secret pertenezcan a la misma aplicación M2M y que esté autorizada para el audience';
+    else if (response.status === 401 && target.pathname === '/productos') hint = 'INTERNAL_API_KEY no coincide con la usada al levantar la API; recreá los servicios con el mismo config.local.env';
+    else if (response.status === 401) hint = 'la API rechazó el token; verificá su dominio/issuer y audience y recreá los servicios después de corregir config.local.env';
+    else if (response.status === 403) hint = 'revisá los scopes efectivos de la aplicación M2M';
+    throw new Error(`${stage} → HTTP ${response.status}: ${hint}.`);
+  }
   return response.json();
 }
 try {

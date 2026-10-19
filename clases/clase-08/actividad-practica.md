@@ -18,13 +18,13 @@ El modelo propone una herramienta y sus argumentos; no ejecuta la API directamen
 
 El repositorio incluye la página del chat y el código que conecta sus mensajes con el modelo y con MCP. También incluye la operación para confirmar pedidos, los botones para aprobarla o rechazarla y las pruebas automáticas. No tenés que construir esas partes.
 
-Tu trabajo está en `clases/clase-08/recursos/laboratorio/inicio/src/server.js`. Ese archivo tiene tres partes incompletas, marcadas con `TODO`:
+Tu trabajo está en `clases/clase-08/recursos/laboratorio/inicio/servidor-mcp/server.js`. Ese archivo tiene tres partes incompletas, marcadas con `TODO`:
 
 1. **Consultar un pedido:** buscar el identificador solicitado en la respuesta de la API y devolver solamente su identificador y estado.
 2. **Listar pedidos pendientes:** seleccionar los pedidos cuyo estado sea `pendiente` y devolver hasta diez, también con identificador y estado.
 3. **Habilitar ese listado como herramienta MCP:** agregar la declaración que permite al host descubrir y llamar a `listar_pedidos_pendientes`.
 
-La sección 3.2 explica dónde agregar cada bloque, incluye el código completo y muestra cómo comprobar que funciona. Trabajá sobre la carpeta `inicio/`; `solucion-docente/` contiene la versión ya resuelta para la demostración del docente.
+La sección 3.2 explica dónde agregar cada bloque, incluye el código completo y muestra cómo comprobar que funciona. Trabajá sobre la carpeta `inicio/`, que contiene los tres puntos pendientes de la actividad.
 
 **Modalidad:** individual. **Práctica:** 45 minutos después de preparar el entorno. **Entrega:** un ZIP del proyecto completado, una nota y resultados de pruebas. La instalación y las descargas pueden tardar bastante: hacé la sección 2 antes de clase.
 
@@ -75,10 +75,37 @@ Desde ahora, todos los comandos de esta guía se ejecutan en **`clases/clase-08/
 Comprobá archivos y Node sin depender de comandos del sistema operativo:
 
 ```bash
-node -e "const fs=require('node:fs');for(const p of ['package.json','package-lock.json','src/server.js','../compose.yaml','../../datos-practica.mjs','../../preflight-ollama.mjs','../../../../clase-07/recursos/laboratorio/Dockerfile']){if(fs.existsSync(p) === false)throw new Error('Falta '+p)}console.log('Archivos encontrados')"
+node -e "const fs=require('node:fs');for(const p of ['package.json','package-lock.json','servidor-mcp/server.js','host/web.js','chat-web/index.html','compartido/security.js','../compose.yaml','../../datos-practica.mjs','../../preflight-ollama.mjs','../../../../clase-07/recursos/laboratorio/Dockerfile']){if(fs.existsSync(p) === false)throw new Error('Falta '+p)}console.log('Archivos encontrados')"
 ```
 
 **Control:** debe decir `Archivos encontrados`. Si falta Clase 08, revisá la rama o consultá si el docente ya publicó el paquete. No crees archivos vacíos para eludir este control.
+
+#### Qué hay en cada carpeta
+
+```text
+inicio/                         # Proyecto Node: ejecutar npm ci y npm test acá
+├── chat-web/                   # Código que ejecuta el navegador
+│   ├── index.html              # Página, formulario y botones
+│   ├── app.js                  # Mensajes WebSocket y presentación de resultados
+│   └── styles.css              # Estilos de la interfaz
+├── host/                       # Backend que atiende al navegador y coordina el modelo
+│   ├── web.js                  # Sirve el chat y recibe conexiones WebSocket
+│   ├── host.js                 # Ollama, validación de propuestas y cliente MCP
+│   └── cli.js                  # Utilidad técnica de terminal; no se usa en la actividad
+├── servidor-mcp/               # Proceso que publica capacidades MCP
+│   └── server.js               # Tools, resource y adaptación a la API HTTP; editás acá
+├── compartido/
+│   └── security.js             # Validación de intención/propuesta y firma/verificación de aprobación
+├── test/                       # Pruebas automáticas de los componentes
+├── fixtures/                   # Datos controlados para esas pruebas
+├── package.json                # Dependencias y comandos de todo el proyecto
+├── config.example.env          # Plantilla sin credenciales reales
+└── config.local.env            # Tu configuración privada, no incluida en Git
+```
+
+**Las carpetas separan responsabilidades, no son cuatro instalaciones:** ejecutás `npm ci` una sola vez desde `inicio/`. El frontend usa JavaScript del navegador; no necesita otro servidor ni instalar npm dentro de `chat-web/`.
+
+Al iniciar `node --env-file=./config.local.env host/web.js`, el host sirve los archivos de `chat-web/` y recibe WebSocket. Cuando el navegador conecta, el host inicia `servidor-mcp/server.js` como proceso hijo y se comunica con él por stdio. No tenés que iniciar MCP en otra terminal. Ollama es un servicio aparte en 11434 y la API es otro servicio en 3008, levantado por Compose con el código de Clase 07. `compartido/` no es un servicio: es código importado por los componentes que lo necesitan.
 
 ### 2.3. Configurá la identidad de la API
 
@@ -129,17 +156,60 @@ Reemplazá los tres valores `TU_...` y confirmá el audience con el docente. `AU
 
 `INTERNAL_API_KEY` es una clave exclusiva del entorno local para crear el producto ficticio; no sustituye OAuth en pedidos. El Compose y el script leen el mismo archivo, pero solo el host/servidor MCP reciben las credenciales M2M necesarias; el navegador y el modelo no las reciben.
 
-### 2.4. Instalá las dependencias del armazón
+### 2.4. Instalá dependencias y comprobá el estado inicial del código
+
+Ejecutá estos comandos **uno por uno**, desde `inicio/`:
 
 ```bash
 npm ci --userconfig=./npm-user-empty.conf --globalconfig=./npm-global-empty.conf --registry=https://registry.npmjs.org
+```
+
+Instala las dependencias con las versiones de `package-lock.json`. Los dos archivos `.conf` incluidos contienen solo comentarios: evitan heredar configuraciones de npm con credenciales ajenas. No hace falta ejecutar además `npm install`.
+
+```bash
 npm run check
+```
+
+Comprueba la **sintaxis JavaScript** de los archivos del paquete. Debe terminar sin errores. Todavía no comprueba que una consulta devuelva el resultado correcto: para eso usamos las pruebas siguientes.
+
+```bash
 npm test
 ```
 
-Los dos archivos `.conf` incluidos contienen solo comentarios: evitan heredar configuraciones de npm con credenciales ajenas. `npm ci` usa el lockfile del paquete.
+**¿Qué hace `npm test`?** Ejecuta el script `test` definido en `package.json`, que en este proyecto es `node --test`. Node busca y ejecuta las pruebas de `test/lab.test.js` y `test/web.test.js`. Cada prueba prepara una situación controlada, llama al código y compara el resultado obtenido con el esperado. Por ejemplo: que se descubran tres herramientas, que una consulta devuelva solo ID/estado y que rechazar una confirmación no modifique el pedido.
 
-**Control inicial:** `npm run check` debe pasar. En `npm test` deben aparecer **29 pruebas: 23 aprobadas y 6 fallidas**, relacionadas con los tres fragmentos pendientes. Esas seis fallas son intencionales; no son un problema de instalación. Si falta una dependencia, hay un error de sintaxis o falla una prueba adicional, corregí eso antes de seguir. Las pruebas usan fixtures: todavía no demuestran modelo, Auth0 ni API real.
+Las pruebas levantan una API de prueba local, un servidor MCP real por stdio y conexiones WebSocket para los casos que lo necesitan. Las respuestas del modelo y la identidad de la API se simulan de manera controlada. **No necesitás iniciar Docker, Ollama ni configurar Auth0 para ejecutar esta suite.** No usa tu `config.local.env`, no consulta tus pedidos reales y no acredita todavía el recorrido integrado con el modelo.
+
+**Cómo leer la salida:**
+
+- `✔` u `ok`: la prueba aprobó.
+- `✖` o `not ok`: el resultado obtenido no coincide con el esperado; debajo aparece el nombre de la prueba y el detalle.
+- `AssertionError`, `actual` y `expected`: indican qué resultado obtuvo la prueba y cuál esperaba. No significan por sí mismos un error de instalación.
+- Las líneas JSON con `host.tool` o `host.approval` son registros de las operaciones de prueba; una aprobación o confirmación que aparezca ahí no es una aprobación humana ni una modificación de la API real.
+- Al final, buscá `tests`, `pass` y `fail` —el formato exacto puede variar según la terminal— para conocer el total y el resultado.
+
+**Resultado esperado antes de completar el código:**
+
+```text
+tests 29
+pass 23
+fail 6
+```
+
+El comando termina indicando fallas porque el armazón se entrega incompleto. En esta etapa son esperables exactamente estas seis:
+
+| Prueba que falla | Motivo en el armazón inicial |
+|---|---|
+| MCP descubre tres tools con schemas de salida y el resource estático | Todavía no registraste la herramienta de listado (`T03-B`). |
+| Listado de pendientes filtra por estado, limita a 10 y proyecta solo ID/estado | Faltan la herramienta y la proyección de pendientes (`T03-B` y `T03-C`). |
+| Listado de pendientes informa errores de la API sin datos crudos | La herramienta aún no está registrada (`T03-B`). |
+| El host ejecuta el listado sin aprobación y no acepta argumentos propuestos por el modelo | El host intenta usar la herramienta de listado que todavía falta (`T03-B`). |
+| Consulta proyecta solo ID/estado y excluye datos personales e inyección indirecta | `mapPedidoFromListado` todavía devuelve `undefined` (`T03-A`). |
+| El host no pasa texto malicioso de respuesta indirecta al modelo | Ese recorrido también depende de la consulta incompleta (`T03-A`). |
+
+Por eso podés ver errores como `TOOL_RESULT_INVALID`, `ORDER_NOT_FOUND` o comparaciones `1 !== 2` en estas pruebas iniciales: son consecuencias de los fragmentos pendientes dentro de los casos controlados. **No los soluciones cambiando credenciales, reinstalando paquetes ni modificando los tests.** Completá A, B y C en la sección 3.2 y volvé a ejecutar `npm test`; entonces deben aprobar **29/29, con cero fallas**.
+
+Si ahora obtenés esas seis fallas y las otras 23 pruebas aprueban, el control inicial está cumplido: continuá con la preparación de Ollama. Si falla `npm run check`, faltan dependencias o aparece una falla distinta, resolvé ese problema antes de seguir.
 
 ### 2.5. Descargá Llama y probá inferencia real
 
@@ -162,7 +232,7 @@ Todavía desde `inicio/`:
 ```bash
 docker compose --env-file ./config.local.env -f ../compose.yaml up -d --build --wait --wait-timeout 180
 docker compose --env-file ./config.local.env -f ../compose.yaml ps
-node -e "fetch('http://127.0.0.1:3008/health').then(async r=>{if(!r.ok)throw new Error('HTTP '+r.status);console.log(await r.json())}).catch(e=>{console.error(e.message);process.exitCode=1})"
+node -e "fetch('http://127.0.0.1:3008/health').then(async r=>{if(r.ok === false)throw new Error('HTTP '+r.status);console.log(await r.json())}).catch(e=>{console.error(e.message);process.exitCode=1})"
 ```
 
 **Control:** Compose informa API, MongoDB y RabbitMQ saludables y worker en ejecución; `/health` devuelve `{ status: 'ok' }`. La primera construcción descarga imágenes y dependencias. No necesitás instalar MongoDB o RabbitMQ en tu máquina, ni iniciar el Compose de otra clase. MongoDB y RabbitMQ no publican puertos al host; la API se publica solo en `127.0.0.1:3008`.
@@ -218,7 +288,55 @@ Debe seguir pendiente, con stock 10. Usá ese mismo ID durante todo el recorrido
 
 ### 3.2. Completá el servidor MCP · 10 minutos
 
-Abrí `src/server.js` de **`inicio/`**, no el de `solucion-docente/`. Los imports, `ORDER_ID`, `MAX_PENDIENTES`, `OUTPUT_SCHEMA`, `result`, `api` y los manejadores de error ya existen: no los vuelvas a declarar. Solo reemplazás los tres lugares indicados.
+#### ¿Qué tiene de particular este servidor?
+
+`servidor-mcp/server.js` **no es otra API REST ni el servidor de la página del chat**. Es un adaptador construido con el SDK de MCP: publica capacidades que el cliente MCP del host puede descubrir e invocar mediante un contrato común.
+
+En este laboratorio:
+
+- El host inicia el servidor como un proceso local y se comunica con él por **stdio** (entrada y salida estándar). Este servidor MCP no abre un puerto HTTP para recibir conexiones.
+- Las operaciones se declaran con `server.registerTool`: cada una tiene nombre, descripción, schema de entrada, schema de salida y una función que la ejecuta. No se declaran rutas de Express para exponerlas al host.
+- Dentro de esa función, el servidor sí llama por **HTTP a la API de pedidos existente**. Obtiene el token OAuth en backend y adapta el resultado al contrato de la herramienta. La API sigue verificando permisos y reglas de negocio.
+- También publica el resource `iaew://docs/pedidos`, un documento que el host puede leer explícitamente. No es una ruta REST ni una consulta del estado actual.
+
+Por ejemplo, el host solicita `consultar_estado_pedido({ pedidoId })` por MCP. El servidor traduce esa solicitud a `GET /pedidos`, busca el pedido en la lista y devuelve un resultado mínimo. La herramienta existe para que la aplicación pueda ofrecer esa capacidad al modelo; el modelo solo propone usarla y el host controla su invocación.
+
+#### ¿Qué significa «proyectar una consulta»?
+
+Acá **proyectar significa construir un objeto con solo los campos que necesitamos de la respuesta de la API**. No significa ejecutar otra consulta, cambiar el pedido ni copiar su documento completo. Es una transformación de datos en el adaptador.
+
+La consulta tiene dos operaciones distintas:
+
+1. **Seleccionar el pedido:** buscar en el listado el elemento cuyo `_id` coincide con `pedidoId`.
+2. **Proyectar sus datos:** construir la salida con `pedidoId` y `estado`, dejando afuera los demás campos.
+
+Ejemplo simplificado de un elemento recibido de la API:
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "estado": "pendiente",
+  "total": 200,
+  "cliente": { "nombre": "Cliente ficticio" }
+}
+```
+
+Datos de ese pedido que conserva la proyección:
+
+```json
+{
+  "pedidoId": "507f1f77bcf86cd799439011",
+  "estado": "pendiente"
+}
+```
+
+Observá que `_id` se transforma en `pedidoId` y que `total` y `cliente` no se copian. Así el host recibe lo necesario para responder sin exponer el objeto completo al modelo. El servidor envolverá esta proyección en el resultado MCP, que también informa si la operación fue correcta o produjo un error.
+
+En el listado de pendientes aplicás la misma idea a varios pedidos: primero filtrás por estado, después conservás ID/estado y finalmente limitás la lista a diez elementos. **Reducir campos no reemplaza la autorización:** la API debe permitir la lectura antes de que el adaptador transforme la respuesta.
+
+#### Ahora completá los tres fragmentos
+
+Abrí `servidor-mcp/server.js` de **`inicio/`**. Los imports, `ORDER_ID`, `MAX_PENDIENTES`, `OUTPUT_SCHEMA`, `result`, `api` y los manejadores de error ya existen: no los vuelvas a declarar. Solo reemplazás los tres lugares indicados.
 
 #### A. Proyectar una consulta — `TODO T03-A`
 
@@ -291,7 +409,7 @@ npm test
 En esta terminal ejecutá y **dejá el proceso abierto**:
 
 ```bash
-node --env-file=./config.local.env src/web.js
+node --env-file=./config.local.env host/web.js
 ```
 
 Debe informar `Chat local: http://127.0.0.1:3018`. Abrí exactamente esa dirección y comprobá **Conectado** y **Modelo local**. Esta terminal muestra los logs del host y MCP; usá una **segunda terminal en la misma carpeta `inicio/`** para las comprobaciones HTTP.
@@ -337,7 +455,7 @@ Ubicá WebSocket entre navegador y host, stdio entre cliente y servidor MCP y HT
 
 ## 4. Entrega
 
-Entregá `apellido-nombre-clase08.zip` con el contenido completado de `inicio/`: `src/`, `public/`, `fixtures/`, `test/`, `package.json`, `package-lock.json`, `config.example.env`, los archivos de configuración npm vacíos, `.nvmrc`, `.gitignore`, `nota.md` y `resultado-tests.txt`.
+Entregá `apellido-nombre-clase08.zip` con el contenido completado de `inicio/`: `servidor-mcp/`, `host/`, `chat-web/`, `compartido/`, `fixtures/`, `test/`, `package.json`, `package-lock.json`, `config.example.env`, los archivos de configuración npm vacíos, `.nvmrc`, `.gitignore`, `nota.md` y `resultado-tests.txt`.
 
 Generá el último archivo:
 
@@ -365,7 +483,8 @@ Abrí el ZIP antes de enviarlo. Para verificar la entrega, extraelo en otra carp
 | Docker no responde | Abrí Docker Desktop; comprobá `docker info`. |
 | `Falta ...` en archivos | Carpeta y rama `main`; no falta descargar un repo diferente. |
 | `ECONNREFUSED` / timeout con Ollama | Servicio Ollama activo en 11434; modelo descargado y preflight aprobado. |
-| HTTP 401 en preparación o MCP | Dominio sin prefijo, audience correcto y credenciales M2M autorizadas. |
+| `Auth0 POST /oauth/token → HTTP 401` | Dominio, client ID y secreto de la misma aplicación M2M autorizada para el audience. |
+| `API GET /pedidos → HTTP 401` | La API rechazó el token. Si corregiste dominio/audience en el archivo, recreá API y worker para que lean los valores actuales. |
 | HTTP 403 o `SCOPE_INSUFFICIENT` | Scopes efectivos de Auth0; no se resuelve ampliando permisos del modelo. |
 | Error al crear producto | `INTERNAL_API_KEY` idéntica en el archivo usado por Compose y el script; si la cambiaste, recreá los servicios con `up`. |
 | Puerto 3008 o 3018 ocupado | Detené solo la instancia propia que lo usa; no inicies dos hosts. |
@@ -377,6 +496,8 @@ Abrí el ZIP antes de enviarlo. Para verificar la entrega, extraelo en otra carp
 | Reconectaste y no hay replay | Era propio de la sesión anterior; no se recupera ni reenvía automáticamente. |
 
 Si una dependencia sigue fallando, guardá el error seguro y pedí ayuda al docente. El recorrido sin modelo no es una resolución alternativa de esta actividad.
+
+**Si corregís dominio o audience después de iniciar Docker:** guardar el archivo no actualiza las variables de los contenedores. Desde `inicio/`, ejecutá `docker compose --env-file ./config.local.env -f ../compose.yaml up -d --force-recreate --wait --wait-timeout 90 api worker` y repetí la preparación. Esto conserva la base. Un `restart` reutiliza la configuración anterior.
 
 ## 6. Cierre del entorno
 

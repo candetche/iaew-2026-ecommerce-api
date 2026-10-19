@@ -2,7 +2,7 @@ import { randomUUID, randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { approvalForAnswer, parseIntent, validateProposal } from './security.js';
+import { approvalForAnswer, parseIntent, validateProposal } from '../compartido/security.js';
 
 export const CHAT_MAX_CHARS = 4096;
 export const TOOL_RESULT_MAX_BYTES = 8192;
@@ -268,7 +268,7 @@ function serverEnvironment(approvalSecret, source = process.env) {
   return env;
 }
 
-export async function connectMcpServer({ serverPath = fileURLToPath(new URL('./server.js', import.meta.url)), approvalSecret = randomBytes(32).toString('base64url'), stderr = 'inherit', env = process.env } = {}) {
+export async function connectMcpServer({ serverPath = fileURLToPath(new URL('../servidor-mcp/server.js', import.meta.url)), approvalSecret = randomBytes(32).toString('base64url'), stderr = 'inherit', env = process.env } = {}) {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [serverPath],

@@ -1,9 +1,35 @@
 # Laboratorio T03 — MCP para pedidos
 
-El paquete tiene dos proyectos independientes:
+El paquete público contiene el proyecto de la actividad:
 
-- [`inicio/`](./inicio/): versión estudiantil; completás tres fragmentos de `src/server.js`: consulta, proyección de pendientes y registro de su tool; seguí el paso a paso de la actividad.
-- [`solucion-docente/`](./solucion-docente/): resolución ejecutable completa y pruebas.
+- [`inicio/`](./inicio/): versión estudiantil; completás tres fragmentos de `servidor-mcp/server.js`: consulta, proyección de pendientes y registro de su tool; seguí el paso a paso de la actividad.
+
+## Qué hay en cada carpeta
+
+```text
+inicio/                         # Proyecto Node: ejecutar npm ci y npm test acá
+├── chat-web/                   # Código que ejecuta el navegador
+│   ├── index.html              # Página, formulario y botones
+│   ├── app.js                  # Mensajes WebSocket y presentación de resultados
+│   └── styles.css              # Estilos de la interfaz
+├── host/                       # Backend que atiende al navegador y coordina el modelo
+│   ├── web.js                  # Sirve el chat y recibe conexiones WebSocket
+│   ├── host.js                 # Ollama, validación de propuestas y cliente MCP
+│   └── cli.js                  # Utilidad técnica de terminal; no se usa en la actividad
+├── servidor-mcp/               # Proceso que publica capacidades MCP
+│   └── server.js               # Tools, resource y adaptación a la API HTTP; editás acá
+├── compartido/
+│   └── security.js             # Validación de intención/propuesta y firma/verificación de aprobación
+├── test/                       # Pruebas automáticas de los componentes
+├── fixtures/                   # Datos controlados para esas pruebas
+├── package.json                # Dependencias y comandos de todo el proyecto
+├── config.example.env          # Plantilla sin credenciales reales
+└── config.local.env            # Tu configuración privada, no incluida en Git
+```
+
+**Las carpetas separan responsabilidades, no son cuatro instalaciones:** ejecutás `npm ci` una sola vez desde `inicio/`. El frontend usa JavaScript del navegador; no necesita otro servidor ni instalar npm dentro de `chat-web/`.
+
+Al iniciar `node --env-file=./config.local.env host/web.js`, el host sirve los archivos de `chat-web/` y recibe WebSocket. Cuando el navegador conecta, el host inicia `servidor-mcp/server.js` como proceso hijo y se comunica con él por stdio. No tenés que iniciar MCP en otra terminal. Ollama es un servicio aparte en 11434 y la API es otro servicio en 3008, levantado por Compose con el código de Clase 07. `compartido/` no es un servicio: es código importado por los componentes que lo necesitan.
 
 ## Antes de la práctica
 
@@ -34,7 +60,7 @@ Para una consulta HTTP independiente de comparación, usá un cliente HTTP local
 Después de configurar `config.local.env` en el paquete elegido y levantar la API de Clase 07:
 
 ```bash
-node --env-file=./config.local.env src/web.js
+node --env-file=./config.local.env host/web.js
 ```
 
 Abrí **http://127.0.0.1:3018**. Usá esa dirección exacta: Host y Origin se validan en el servidor. El indicador debe mostrar **Modelo local**. El preflight aprobado es requisito para iniciar.
@@ -49,7 +75,7 @@ La API real y la prueba fixture se distinguen en [validacion-web.md](../../valid
 
 ## Instalación y pruebas previas
 
-Desde `inicio/` o `solucion-docente/`:
+Desde `inicio/`:
 
 ```bash
 npm ci --userconfig=./npm-user-empty.conf --globalconfig=./npm-global-empty.conf --registry=https://registry.npmjs.org

@@ -89,13 +89,13 @@ Fuentes de instalación: [inicio oficial](https://docs.ollama.com/quickstart), [
 
 ## 7. Iniciá el chat web del laboratorio
 
-Esta preparación se completa antes de los 45 minutos. La interfaz viene construida; durante la práctica completás los tres fragmentos de `src/server.js` indicados en la actividad. Desde `inicio/`, iniciá el Compose de Clase 08 con `docker compose --env-file ./config.local.env -f ../compose.yaml up -d --build --wait --wait-timeout 180`. Reutiliza la API de Clase 07 y la publica en `http://127.0.0.1:3008`; el script `node --env-file=./config.local.env ../../datos-practica.mjs preparar` crea los datos ficticios. Seguí el orden completo de la actividad.
+Esta preparación se completa antes de los 45 minutos. La interfaz viene construida; durante la práctica completás los tres fragmentos de `servidor-mcp/server.js` indicados en la actividad. Desde `inicio/`, iniciá el Compose de Clase 08 con `docker compose --env-file ./config.local.env -f ../compose.yaml up -d --build --wait --wait-timeout 180`. Reutiliza la API de Clase 07 y la publica en `http://127.0.0.1:3008`; el script `node --env-file=./config.local.env ../../datos-practica.mjs preparar` crea los datos ficticios. Seguí el orden completo de la actividad.
 
-Abrí una terminal dentro de `recursos/laboratorio/inicio/` (o `solucion-docente/` para el docente). Prepará `config.local.env` como indica el README del laboratorio. Instalá las dependencias locales con el lockfile:
+Abrí una terminal dentro de `recursos/laboratorio/inicio/`. Prepará `config.local.env` como indica el README del laboratorio. Instalá las dependencias locales con el lockfile:
 
 ```bash
 npm ci --userconfig=./npm-user-empty.conf --globalconfig=./npm-global-empty.conf --registry=https://registry.npmjs.org
-node --env-file=./config.local.env src/web.js
+node --env-file=./config.local.env host/web.js
 ```
 
 Abrí `http://127.0.0.1:3018` y verificá que la interfaz muestre **Modelo local**. Si no conecta o el modelo falla, resolvé ese problema antes de continuar con la actividad.
