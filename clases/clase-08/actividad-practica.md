@@ -73,7 +73,7 @@ Tu trabajo está en `clases/clase-08/recursos/laboratorio/inicio/servidor-mcp/se
 
 La sección 3.2 explica dónde agregar cada bloque, incluye el código completo y muestra cómo comprobar que funciona. Trabajá sobre la carpeta `inicio/`, que contiene los tres puntos pendientes de la actividad.
 
-**Modalidad:** individual. **Práctica:** 45 minutos después de preparar el entorno. **Entrega:** un ZIP del proyecto completado y el resultado de las pruebas. La instalación y las descargas pueden tardar bastante: hacé la sección 2 antes de clase.
+**Modalidad:** individual. **Práctica:** 45 minutos después de preparar el entorno. **Entrega:** `servidor-mcp/server.js` completado y `resultado-tests.txt`. La instalación y las descargas pueden tardar bastante: hacé la sección 2 antes de clase.
 
 Este documento contiene el recorrido desde la descarga del repo. No necesitás haber ejecutado otra actividad. El Compose incluido reutiliza el código de la API de Clase 07 que ya está en el mismo repositorio; levanta API, MongoDB, RabbitMQ y worker. La actividad observa logs y correlación del host/MCP; no requiere iniciar Grafana ni el stack completo de observabilidad.
 
@@ -464,25 +464,18 @@ Escribir otra vez `confirmar <ID>` después del éxito crea otra operación y **
 
 ## 4. Entrega
 
-Entregá `apellido-nombre-clase08.zip` con el contenido completado de `inicio/`: `servidor-mcp/`, `host/`, `chat-web/`, `compartido/`, `fixtures/`, `test/`, `package.json`, `package-lock.json`, `config.example.env`, los archivos de configuración npm vacíos, `.nvmrc`, `.gitignore` y `resultado-tests.txt`.
+Entregá dos archivos:
 
-Generá el último archivo:
+1. `servidor-mcp/server.js` con los tres fragmentos completados.
+2. `resultado-tests.txt` con todas las pruebas aprobadas.
+
+Generá el segundo desde `inicio/`:
 
 ```bash
 npm test > resultado-tests.txt 2>&1
 ```
 
-**Control:** el archivo muestra 29/29.
-
-En macOS/Linux, desde `inicio/`, escribí el ZIP **fuera** de la carpeta para evitar que se incluya a sí mismo:
-
-```bash
-zip -r ../apellido-nombre-clase08.zip . -x "node_modules/*" "config.local.env" ".env" "*.zip" "datos-practica.json" ".npm-cache/*" ".DS_Store"
-```
-
-En Windows, creá una carpeta temporal fuera del repo y copiá solo los elementos enumerados arriba; comprimila con el explorador. No borres tus credenciales para comprimir: simplemente no las copies. No incluyas `node_modules`, `.env`, `config.local.env`, secretos, tokens ni datos personales.
-
-Abrí el ZIP antes de enviarlo. Para verificar la entrega, extraelo en otra carpeta e instalá con el mismo `npm ci` del paso 2.4; ejecutá `npm run check` y `npm test`. Deben pasar 29/29. Para ejecutar el chat integrado desde esa copia se requiere además el repo con la API, el modelo y configuración local nueva: no se incluyen servicios ni credenciales en la entrega.
+**Control:** abrí `resultado-tests.txt` y comprobá que muestre 29/29 pruebas aprobadas y ninguna falla. No entregues `config.local.env`, tokens ni datos personales.
 
 ## 5. Si algo no funciona
 
