@@ -1,10 +1,10 @@
 # Inicio de T03
 
-Seguí primero el [README del laboratorio](../README.md) para preparar la API, el entorno y las credenciales. Este proyecto ya incluye el host, el cliente MCP stdio, el servidor MCP, las policies y la suite de fixtures.
+Empezá por la [actividad autocontenida](../../../actividad-practica.md), que incluye instalación, configuración, servicios y controles desde un clon nuevo. El [README del laboratorio](../README.md) amplía el contrato. Este proyecto ya incluye el host, el cliente MCP stdio, el servidor MCP, las policies y la suite de fixtures.
 
 ## Tareas pendientes
 
-En `src/server.js` hay tres fragmentos marcados con TODO: `T03-A` (`mapPedidoFromListado`), `T03-B` (registrar la tool `listar_pedidos_pendientes`) y `T03-C` (`mapPendientesFromListado`). El código a agregar en cada lugar está en la [actividad práctica](../../../actividad-practica.md#2-completar-el-servidor-mcp-y-consultar--10-minutos). La API ofrece `GET /pedidos`, no `GET /pedidos/:id`: la consulta y el listado se resuelven filtrando esa respuesta y proyectando solo `{ pedidoId, estado }`. No pases el documento original al host ni al modelo.
+En `src/server.js` hay tres fragmentos marcados con TODO: `T03-A` (`mapPedidoFromListado`), `T03-B` (registrar la tool `listar_pedidos_pendientes`) y `T03-C` (`mapPendientesFromListado`). El código a agregar en cada lugar está en la [actividad práctica autocontenida](../../../actividad-practica.md). La API ofrece `GET /pedidos`, no `GET /pedidos/:id`: la consulta y el listado se resuelven filtrando esa respuesta y proyectando solo `{ pedidoId, estado }`. No pases el documento original al host ni al modelo.
 
 Ejecutá la suite con:
 

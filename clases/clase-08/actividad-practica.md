@@ -1,56 +1,228 @@
-# Actividad práctica individual — IA, tools y MCP
+# Actividad individual — Del chat a una API mediante IA y MCP
 
-## Propósito
+## 1. Qué vas a construir y comprobar
 
-Vas a conectar un asistente preparado con la API de pedidos mediante un servidor MCP. Primero vas a consultar un pedido y comprobar la salida; luego vas a observar una acción controlada, rechazarla y aprobarla explícitamente. El objetivo no es construir un chatbot desde cero, sino reconocer quién propone, valida, aprueba, autoriza y ejecuta.
+Vas a completar un servidor MCP para que un chat web consulte y confirme pedidos en una API real. Vas a usar **un único recorrido con modelo local obligatorio**:
 
-**Duración:** 45 minutos. **Modalidad:** individual. **Entrega:** un `.zip` con el proyecto funcionando (ver [Entrega](#entrega)).  
-**Preparación obligatoria antes de clase:** [preparacion-entorno.md](preparacion-entorno.md) y [laboratorio/README.md](recursos/laboratorio/README.md).
+```text
+Navegador: chat y botones
+    │ WebSocket
+Host: coordina Ollama/llama3.2:3b, valida propuestas y pide aprobación
+    │ Cliente MCP, por stdio
+Servidor MCP: herramientas y adaptación a HTTP
+    │ HTTP + token OAuth obtenido de Auth0
+API de pedidos → MongoDB / RabbitMQ → worker
+```
 
-La guía usa el laboratorio local de la clase. Completá sus instrucciones, instalá las dependencias del paquete elegido y dejá la API de Clase 07 disponible antes de iniciar el cronómetro. La actividad tiene un único recorrido obligatorio: chat web → host con Ollama y `llama3.2:3b` → cliente/servidor MCP → API real. No exige una cuenta paga de IA. El preflight debe aprobarse antes de iniciar; si falla, resolvé la preparación con el docente en un equipo que ejecute ese mismo recorrido.
+El modelo propone una herramienta y sus argumentos; no ejecuta la API directamente. El host valida la propuesta, la persona aprueba las confirmaciones y la API verifica permisos y reglas de negocio. El resultado real se muestra separado del comentario opcional del modelo.
 
-## Qué está preparado y qué vas a completar
+El repositorio incluye la página del chat y el código que conecta sus mensajes con el modelo y con MCP. También incluye la operación para confirmar pedidos, los botones para aprobarla o rechazarla y las pruebas automáticas. No tenés que construir esas partes.
 
-La [base `clase-08-inicio`](https://github.com/utn-frc-iaew/iaew-2026-ecommerce-api/tree/clase-08-inicio) contiene la Clase 07 resuelta. El laboratorio aporta por separado:
+Tu trabajo está en `clases/clase-08/recursos/laboratorio/inicio/src/server.js`. Ese archivo tiene tres partes incompletas, marcadas con `TODO`:
 
-- un armazón en `recursos/laboratorio/inicio/`;
-- una resolución docente en `recursos/laboratorio/solucion-docente/`;
-- tres fragmentos de `src/server.js` que completás en el armazón, con el código indicado paso a paso en esta guía;
-- la interfaz web, el host, el cliente MCP, la aprobación, las herramientas de acción y las pruebas preparadas. No construís frontend ni infraestructura durante la práctica.
+1. **Consultar un pedido:** buscar el identificador solicitado en la respuesta de la API y devolver solamente su identificador y estado.
+2. **Listar pedidos pendientes:** seleccionar los pedidos cuyo estado sea `pendiente` y devolver hasta diez, también con identificador y estado.
+3. **Habilitar ese listado como herramienta MCP:** agregar la declaración que permite al host descubrir y llamar a `listar_pedidos_pendientes`.
 
-Seguí el README del laboratorio para preparar el armazón. Los tres fragmentos están marcados con `TODO T03-A`, `TODO T03-B` y `TODO T03-C`. No copies la solución docente sobre tu armazón. No edites la rama publicada `clase-08-inicio`.
+La sección 3.2 explica dónde agregar cada bloque, incluye el código completo y muestra cómo comprobar que funciona. Trabajá sobre la carpeta `inicio/`; `solucion-docente/` contiene la versión ya resuelta para la demostración del docente.
 
-## Contrato de la actividad
+**Modalidad:** individual. **Práctica:** 45 minutos después de preparar el entorno. **Entrega:** un ZIP del proyecto completado, una nota y resultados de pruebas. La instalación y las descargas pueden tardar bastante: hacé la sección 2 antes de clase.
 
-| Elemento | Contrato |
+Este documento contiene el recorrido desde la descarga del repo. No necesitás haber ejecutado otra actividad. El Compose incluido reutiliza el código de la API de Clase 07 que ya está en el mismo repositorio; levanta API, MongoDB, RabbitMQ y worker. La actividad observa logs y correlación del host/MCP; no requiere iniciar Grafana ni el stack completo de observabilidad.
+
+## 2. Preparación desde cero — antes de iniciar los 45 minutos
+
+### 2.1. Instalá y verificá las herramientas
+
+Necesitás Git, Node.js **22.17.0 o posterior**, npm, Docker con Compose v2 y Ollama. Abrí Docker Desktop y Ollama antes de verificar. No alcanza con tenerlos instalados: sus servicios deben estar activos.
+
+- Git: instalalo desde <https://git-scm.com/downloads> si falta.
+- Node.js: instalador de <https://nodejs.org/en/download>. Si usás nvm, ejecutá `nvm install 22.17.0` y `nvm use 22.17.0`. Después abrí una terminal nueva si el comando todavía informa una versión vieja.
+- Docker Desktop: seguí el instalador para tu sistema en <https://docs.docker.com/desktop/>. En Windows usá contenedores Linux y WSL 2 cuando el instalador lo requiera. En Linux también sirve Docker Engine con el plugin Compose v2.
+- Ollama: descargá e instalá desde <https://ollama.com/download> y abrí la aplicación. En Linux iniciá `ollama serve` en una terminal si el servicio no está activo. Si dice que el puerto ya está ocupado, comprobá si Ollama ya está ejecutándose; no inicies una segunda instancia.
+
+En una terminal ejecutá, uno por uno:
+
+```bash
+git --version
+node --version
+npm --version
+docker --version
+docker compose version
+docker info
+ollama --version
+```
+
+**Control:** todos deben funcionar; Node no puede ser menor que 22.17.0. `docker info` debe mostrar el servidor, sin error de conexión. Si algo falla, corregilo antes de seguir.
+
+El equipo debe poder ejecutar Docker y el modelo al mismo tiempo. La evidencia docente corresponde a macOS con M2 Pro y 16 GiB; no es un requisito universal ni una garantía para otro equipo. La prueba de Ollama del paso 2.5 decide si tu entorno está listo. Si falta memoria, trabajá con el docente en un equipo preparado que ejecute el mismo recorrido; no reemplaces el modelo por llamadas programadas.
+
+### 2.2. Descargá el repositorio y ubicá la carpeta
+
+En la carpeta donde guardás tus proyectos:
+
+```bash
+git clone https://github.com/utn-frc-iaew/iaew-2026-ecommerce-api.git
+cd iaew-2026-ecommerce-api
+git switch main
+cd clases/clase-08/recursos/laboratorio/inicio
+```
+
+**Usá `main`:** ahí están los materiales y el armazón de esta clase. La rama `clase-08-inicio` conserva la base anterior y no es el recorrido de descarga de esta guía. Si ya tenías el repo, actualizá tu copia sin sobrescribir cambios propios; no vuelvas a clonar encima de una carpeta existente.
+
+Desde ahora, todos los comandos de esta guía se ejecutan en **`clases/clase-08/recursos/laboratorio/inicio/`**, salvo que se indique otra carpeta. Abrí esa carpeta en el editor. Si abrís otra terminal, volvé a ubicarte en ella.
+
+Comprobá archivos y Node sin depender de comandos del sistema operativo:
+
+```bash
+node -e "const fs=require('node:fs');for(const p of ['package.json','package-lock.json','src/server.js','../compose.yaml','../../datos-practica.mjs','../../preflight-ollama.mjs','../../../../clase-07/recursos/laboratorio/Dockerfile']){if(fs.existsSync(p) === false)throw new Error('Falta '+p)}console.log('Archivos encontrados')"
+```
+
+**Control:** debe decir `Archivos encontrados`. Si falta Clase 08, revisá la rama o consultá si el docente ya publicó el paquete. No crees archivos vacíos para eludir este control.
+
+### 2.3. Configurá la identidad de la API
+
+Necesitás que el docente te proporcione por un canal privado una aplicación **M2M autorizada** de Auth0 con dominio, client ID, client secret y audience de esta API. Debe tener estos scopes efectivos:
+
+| Scope | Uso |
 |---|---|
-| Caso | Operador de un laboratorio aislado; no es autoservicio de clientes. |
-| Consulta | `consultar_estado_pedido({ pedidoId })`, salida mínima `{ pedidoId, estado }`. |
-| Listado | `listar_pedidos_pendientes()`, sin argumentos; devuelve como máximo 10 pedidos pendientes con `{ pedidoId, estado }`, el total y si la lista fue truncada. No requiere aprobación porque no modifica nada. |
-| API de consulta | `GET /pedidos`, con scope `read:pedidos`, para la consulta y el listado. No existe `GET /pedidos/{id}`; el adaptador selecciona el pedido desde el listado y proyecta solo ID y estado. |
-| Acción | `confirmar_pedido({ pedidoId })`, protegida por `confirm:pedidos` y aprobación explícita vinculada a la operación y al pedido. |
-| Idempotencia | La clave la conserva el host; no la elige el modelo. |
-| Resource | `iaew://docs/pedidos`, documentación estática que el cliente lee de manera explícita. |
-| Evidencia | Resultados y errores mínimos, sin tokens, claves, emails ni cuerpos crudos de la API. |
+| `read:pedidos` | Comparar por HTTP, consultar y listar pedidos. |
+| `write:pedidos` | Crear el pedido ficticio en la preparación. |
+| `confirm:pedidos` | Confirmar el pedido desde el chat con aprobación. |
 
-Los scopes y la aprobación resuelven controles distintos. La API de este laboratorio utiliza una identidad M2M de operador y no implementa autorización por dueño del pedido.
+No alcanza con escribir esos nombres en el archivo o en un prompt: la aplicación M2M debe estar autorizada en Auth0. La preparación no modifica el tenant. Si no tenés una identidad autorizada, pedila antes de iniciar: **el repo no incluye credenciales reales**. Se usa identidad de servicio de operador, no login de alumnos ni autorización por dueño de pedido.
 
-## Recorrido de 45 minutos
+Primero creá tu archivo de configuración local a partir de la plantilla incluida. La plantilla `config.example.env` contiene los nombres de las variables y valores de ejemplo; `config.local.env` será tu copia personal, donde completarás las credenciales. Este comando **solo copia el archivo**: no instala dependencias, no obtiene tokens, no completa los secretos ni inicia servicios.
 
-### 1. Preflight del modelo local · 5 minutos
+Ejecutalo desde `clases/clase-08/recursos/laboratorio/inicio/`:
 
-1. Confirmá que la preparación previa está completa y que los servicios del laboratorio están disponibles.
-2. Verificá `GET /pedidos` con un cliente HTTP local configurado para `client_credentials`, según el README del laboratorio; compará solo el ID y el estado del pedido de prueba. No pegues ni compartas el token.
-3. Ejecutá el preflight del modelo local. Debe aprobarse para continuar. Si falla, resolvé el entorno con el docente; no amplíes permisos ni sustituyas la inferencia por llamadas programadas.
-4. Con la API de Clase 07 activa en `http://127.0.0.1:3008`, iniciá desde `inicio/` el host preparado: `node --env-file=./config.local.env src/web.js`. Abrí `http://127.0.0.1:3018` y verificá que la interfaz muestre **Modelo local**. Las dependencias y `config.local.env` ya deben estar preparados.
+```bash
+node -e "require('node:fs').copyFileSync('config.example.env','config.local.env',require('node:fs').constants.COPYFILE_EXCL)"
+```
 
-**Antes de continuar:** el modelo local pasó el preflight y el chat está conectado en modo **Modelo local**.
+Qué significa cada parte:
 
-### 2. Completar el servidor MCP y consultar · 10 minutos
+- `node -e`: ejecuta directamente el código JavaScript escrito entre las comillas dobles.
+- `require('node:fs')`: usa el módulo de archivos incluido en Node; no requiere instalar otro paquete.
+- `copyFileSync`: copia el contenido de `config.example.env` al archivo `config.local.env`, en la carpeta actual.
+- `COPYFILE_EXCL`: impide reemplazar un archivo de destino existente, para conservar cualquier configuración o credencial que ya hayas cargado.
 
-Todo el código de este paso va en `src/server.js`, dentro de `inicio/`. Antes de editar, ejecutá `npm test`: deben fallar exactamente 6 pruebas, porque faltan los tres fragmentos. Al terminar los tres pasos, la suite debe pasar completa (29/29).
+**Resultado esperado:** si la copia se realiza correctamente, vuelve el prompt sin imprimir un mensaje. Abrí `config.local.env` en el editor y completalo. Si aparece `EEXIST`, el archivo ya existía y quedó intacto: usá ese archivo, no lo borres para repetir el comando. Si aparece `ENOENT`, comprobá que estés en `inicio/` y que exista `config.example.env`. No muestres el contenido de tu configuración en capturas ni la subas a Git; está ignorada mediante `.gitignore`.
 
-**Paso A · Proyectar la consulta (`TODO T03-A`).** Buscá la función `mapPedidoFromListado` al final del archivo y reemplazá su cuerpo. La API no tiene `GET /pedidos/{id}`: se pide el listado y el adaptador elige el pedido y devuelve solo ID y estado.
+**Compatibilidad:** el mismo comando utiliza la API de archivos de Node y comillas dobles externas; está previsto para zsh/Bash en macOS/Linux y PowerShell/CMD en Windows, con Node instalado. Se ejecutaron pruebas reales de copia y rechazo de sobrescritura en macOS (zsh/Bash) y Linux (contenedor con Node 22.17.0). Windows se revisó contra la documentación de Node, pero no se ejecutó en esta validación. Referencias: [copia de archivos y COPYFILE_EXCL](https://nodejs.org/docs/latest-v22.x/api/fs.html#fscopyfilesyncsrc-dest-mode) y [node -e y comillas de terminal](https://nodejs.org/api/cli.html#-e---eval-script).
+
+Editá `config.local.env` en tu editor:
+
+```dotenv
+API_BASE_URL=http://127.0.0.1:3008
+AUTH0_DOMAIN=TU_TENANT.us.auth0.com
+AUTH0_CLIENT_ID=TU_CLIENT_ID
+AUTH0_CLIENT_SECRET=TU_CLIENT_SECRET
+AUTH0_AUDIENCE=https://iaew-pedidos-api
+WEB_PORT=3018
+OLLAMA_MODEL=llama3.2:3b
+OLLAMA_URL=http://127.0.0.1:11434
+INTERNAL_API_KEY=iaew-clase08-local
+```
+
+Reemplazá los tres valores `TU_...` y confirmá el audience con el docente. `AUTH0_DOMAIN` va **sin `https://` ni barras**. Conservá el formato `NOMBRE=valor`, sin espacios alrededor de `=`. No copies el archivo de configuración de otra persona.
+
+`INTERNAL_API_KEY` es una clave exclusiva del entorno local para crear el producto ficticio; no sustituye OAuth en pedidos. El Compose y el script leen el mismo archivo, pero solo el host/servidor MCP reciben las credenciales M2M necesarias; el navegador y el modelo no las reciben.
+
+### 2.4. Instalá las dependencias del armazón
+
+```bash
+npm ci --userconfig=./npm-user-empty.conf --globalconfig=./npm-global-empty.conf --registry=https://registry.npmjs.org
+npm run check
+npm test
+```
+
+Los dos archivos `.conf` incluidos contienen solo comentarios: evitan heredar configuraciones de npm con credenciales ajenas. `npm ci` usa el lockfile del paquete.
+
+**Control inicial:** `npm run check` debe pasar. En `npm test` deben aparecer **29 pruebas: 23 aprobadas y 6 fallidas**, relacionadas con los tres fragmentos pendientes. Esas seis fallas son intencionales; no son un problema de instalación. Si falta una dependencia, hay un error de sintaxis o falla una prueba adicional, corregí eso antes de seguir. Las pruebas usan fixtures: todavía no demuestran modelo, Auth0 ni API real.
+
+### 2.5. Descargá Llama y probá inferencia real
+
+**Ollama** es el programa que ejecuta modelos; **Llama** es el modelo que vas a descargar. No son el mismo componente.
+
+```bash
+ollama pull llama3.2:3b
+ollama list
+node ../../preflight-ollama.mjs
+```
+
+**Control:** `ollama list` muestra `llama3.2:3b`. El preflight ejecuta cuatro ciclos con el modelo; el primero permite la carga inicial y los tres calientes deben seleccionar la tool/ID esperados, mencionar el estado recibido y tardar hasta 15 segundos cada uno. Al final debe decir `Preparación local aprobada`. Esa prueba usa un resultado de herramienta ficticio: comprueba inferencia, no MCP ni la API real.
+
+Si no aprueba, conservá el error, verificá que Ollama esté activo, cerrá aplicaciones que consumen memoria y repetí la preparación con el docente. No cambies permisos, modelo ni recorrido para simular un resultado aprobado. Los modelos locales no requieren una suscripción paga; Auth0 y la descarga inicial sí requieren conexión de red.
+
+### 2.6. Levantá la API, la base, el broker y el worker
+
+Todavía desde `inicio/`:
+
+```bash
+docker compose --env-file ./config.local.env -f ../compose.yaml up -d --build --wait --wait-timeout 180
+docker compose --env-file ./config.local.env -f ../compose.yaml ps
+node -e "fetch('http://127.0.0.1:3008/health').then(async r=>{if(!r.ok)throw new Error('HTTP '+r.status);console.log(await r.json())}).catch(e=>{console.error(e.message);process.exitCode=1})"
+```
+
+**Control:** Compose informa API, MongoDB y RabbitMQ saludables y worker en ejecución; `/health` devuelve `{ status: 'ok' }`. La primera construcción descarga imágenes y dependencias. No necesitás instalar MongoDB o RabbitMQ en tu máquina, ni iniciar el Compose de otra clase. MongoDB y RabbitMQ no publican puertos al host; la API se publica solo en `127.0.0.1:3008`.
+
+Si ya tenías una API usando el puerto 3008, detené únicamente el entorno propio que lo ocupa antes de iniciar este. No ejecutes limpiezas globales ni borres contenedores de otros proyectos.
+
+Para diagnóstico:
+
+```bash
+docker compose --env-file ./config.local.env -f ../compose.yaml logs --tail 40 api worker
+```
+
+No uses `docker compose config` para generar evidencia: su salida puede expandir valores del entorno. `/health` solo verifica que la API responda; el paso siguiente verifica identidad, lectura y datos de negocio.
+
+### 2.7. Creá y verificá el pedido de prueba
+
+```bash
+node --env-file=./config.local.env ../../datos-practica.mjs preparar
+node --env-file=./config.local.env ../../datos-practica.mjs estado
+```
+
+El script incluido obtiene un token de Auth0 sin imprimirlo, consulta la API, comprueba los scopes a partir de la identidad validada por la API y crea un producto ficticio con stock 10 y un pedido de **dos unidades**. Guarda únicamente IDs en `datos-practica.json`; **no tenés que escribir este script ni crear datos a mano**.
+
+**Control:** la salida muestra `preparado: true`, un `pedidoId` de 24 caracteres hexadecimales y `estado: "pendiente"`. La consulta `estado` debe mostrar stock **10** y `eventoId: null`. Copiá el valor de `pedidoId` a tu nota temporal: reemplaza `<ID>` en todos los mensajes siguientes. No copies tokens ni el cuerpo completo de `/pedidos`.
+
+Si volvés a ejecutar `preparar` y el pedido guardado sigue pendiente, lo reutiliza. Después de confirmarlo, otra ejecución de `preparar` crea nuevos datos para una nueva práctica. No lo ejecutes entre confirmación y replay: en ese tramo tenemos que comprobar la misma operación y el mismo pedido.
+
+### 2.8. Puerta de entrada a la práctica
+
+Solo iniciá los 45 minutos si podés marcar todos estos puntos:
+
+- [ ] Estás en `main` y existen los archivos de Clase 08 y la API reutilizada.
+- [ ] Node ≥22.17.0, dependencias instaladas y sintaxis correcta.
+- [ ] Suite inicial: 29 pruebas, exactamente 6 fallas por los tres TODO.
+- [ ] Ollama tiene `llama3.2:3b` y el preflight aprobó.
+- [ ] Compose está activo y `/health` responde.
+- [ ] Auth0 autorizó lectura, creación y confirmación; el script de preparación terminó correctamente.
+- [ ] Tenés un pedido pendiente propio del laboratorio y stock 10.
+
+Todavía **no inicies el chat**: primero completás los tres fragmentos. Así el proceso MCP se abrirá con el código actualizado.
+
+## 3. Práctica de 45 minutos
+
+### 3.1. Validación inicial · 5 minutos
+
+Repasá el checklist anterior y ejecutá otra vez:
+
+```bash
+node --env-file=./config.local.env ../../datos-practica.mjs estado
+```
+
+Debe seguir pendiente, con stock 10. Usá ese mismo ID durante todo el recorrido. No cambies las políticas de seguridad ni el código de confirmación.
+
+### 3.2. Completá el servidor MCP · 10 minutos
+
+Abrí `src/server.js` de **`inicio/`**, no el de `solucion-docente/`. Los imports, `ORDER_ID`, `MAX_PENDIENTES`, `OUTPUT_SCHEMA`, `result`, `api` y los manejadores de error ya existen: no los vuelvas a declarar. Solo reemplazás los tres lugares indicados.
+
+#### A. Proyectar una consulta — `TODO T03-A`
+
+Buscá `mapPedidoFromListado` al final del archivo y reemplazá **toda esa función** por:
 
 ```js
 export function mapPedidoFromListado(pedidos, pedidoId) {
@@ -60,13 +232,17 @@ export function mapPedidoFromListado(pedidos, pedidoId) {
 }
 ```
 
-**Paso B · Proyectar el listado (`TODO T03-C`).** Reemplazá la función `mapPendientesFromListado`, que está justo encima. Filtra los pendientes, limita la salida y no deja pasar ningún otro dato del pedido (emails, ítems, direcciones).
+La API ofrece `GET /pedidos`, no `GET /pedidos/{id}`. Esta función selecciona el ID del listado y proyecta solamente los campos necesarios. No devuelve email, ítems ni el documento original.
+
+#### B. Proyectar los pendientes — `TODO T03-C`
+
+Justo encima está `mapPendientesFromListado`. Reemplazá **toda esa función** por:
 
 ```js
 export function mapPendientesFromListado(pedidos) {
   const pendientes = pedidos
-   .filter(item => item?.estado === 'pendiente' && typeof item._id === 'string' && ORDER_ID.test(item._id))
-   .map(item => ({ pedidoId: item._id, estado: item.estado }));
+    .filter(item => item?.estado === 'pendiente' && typeof item._id === 'string' && ORDER_ID.test(item._id))
+    .map(item => ({ pedidoId: item._id, estado: item.estado }));
   return {
     total: pendientes.length,
     pedidos: pendientes.slice(0, MAX_PENDIENTES),
@@ -75,7 +251,11 @@ export function mapPendientesFromListado(pedidos) {
 }
 ```
 
-**Paso C · Registrar la tool de listado (`TODO T03-B`).** Dentro de `createMcpServer`, entre `consultar_estado_pedido` y `confirmar_pedido`, reemplazá el comentario `TODO T03-B` por este bloque. Una tool MCP se declara con nombre, descripción, schema de entrada y schema de salida; el listado no recibe argumentos y llama a la misma API existente.
+Filtrás pedidos pendientes válidos y devolvés hasta 10. `total` cuenta todos los pendientes; `truncado` informa si el límite dejó algunos afuera.
+
+#### C. Registrar la herramienta — `TODO T03-B`
+
+Dentro de `createMcpServer`, buscá el comentario `TODO T03-B`, entre el registro de `consultar_estado_pedido` y el de `confirmar_pedido`. **Reemplazá ese comentario por el bloque siguiente**, dentro de la función existente:
 
 ```js
   server.registerTool('listar_pedidos_pendientes', {
@@ -91,95 +271,119 @@ export function mapPendientesFromListado(pedidos) {
     if (failure) return result(errorResultForFailure(failure, 'listar_pedidos_pendientes', ambiguous), true);
     if (!response.ok) return result(mapApiError(response.status, payload, 'listar_pedidos_pendientes'), true);
     if (!Array.isArray(payload)) return result({ status: 'error', code: 'API_RESPONSE_INVALID' }, true);
-    return result({ status: 'ok',...mapPendientesFromListado(payload) });
+    return result({ status: 'ok', ...mapPendientesFromListado(payload) });
   });
 ```
 
-**Comprobar.**
+El nombre permite descubrir la capacidad; el schema vacío indica que no recibe argumentos; el schema de salida limita el contrato. El handler consulta la API, conserva errores seguros y usa la proyección que completaste. No necesita aprobación porque no modifica datos, pero la API exige `read:pedidos`.
 
-1. Ejecutá `npm test`: deben pasar las 29 pruebas. Si falla alguna, leé el nombre de la prueba y revisá el paso correspondiente (consulta, listado o descubrimiento de tools).
-2. **Detené el host con Ctrl+C, volvé a iniciarlo con el mismo comando del paso 1 y recargá la página.** El servidor MCP carga el código al conectarse; `npm test` no actualiza la sesión abierta.
-3. Escribí `pendientes` en el chat, elegí un ID de esa lista y escribí `consulta <ID>`. Compará la tarjeta **Resultado autoritativo de la operación** con una consulta HTTP autorizada.
-4. Pulsá **Leer documentación de pedidos** para leer el resource `iaew://docs/pedidos` y explicá quién lo seleccionó. No supongas que el servidor lo agregó automáticamente al contexto.
+#### D. Comprobá antes de abrir el chat
 
-**Evidencia:** suite 29/29, nombres de las tres tools descubiertas, entrada y salida mínima de la consulta, y diferencia entre tool y resource. Identificá al host como consumidor MCP: el modelo no se conecta directamente al servidor.
+```bash
+npm run check
+npm test
+```
 
-### 3. Recorrer una intención sin inventar datos · 10 minutos
+**Control:** 29 pruebas aprobadas y ninguna fallida. Si falla consulta, revisá A; si falla proyección de pendientes, B; si no aparece la tercera tool, C. No cambies los tests para conseguir un resultado aprobado.
 
-1. Usá el chat web con Ollama y `llama3.2:3b` después de aprobar el preflight. La gramática admitida es `consulta <ID>` o `confirmar <ID>`; no es lenguaje natural irrestricto.
-2. Observá la propuesta estructurada para consultar el pedido y señalá qué valida el host antes de invocar MCP.
-3. Probá la interacción sin un ID suficiente: el host debe detenerse y pedir aclaración; no debe inventar un identificador ni invocar una acción.
-4. Compará el **Comentario opcional del asistente · no autoritativo** con la tarjeta de resultado y la API. El comentario generado puede fallar o contradecir el dato; nunca reemplaza la evidencia autoritativa.
+### 3.3. Iniciá el chat y recorré una consulta · 10 minutos
 
-**Evidencia:** secuencia intención → propuesta → validación → llamada → resultado → respuesta, con el responsable de cada etapa, que vas a anotar en la nota de entrega. Registrá la propuesta generada por el modelo y comprobá que el host la validó antes de invocar MCP.
+En esta terminal ejecutá y **dejá el proceso abierto**:
 
-### 4. Rechazar, aprobar y repetir · 15 minutos
+```bash
+node --env-file=./config.local.env src/web.js
+```
 
-1. Escribí `confirmar <ID>` con el identificador del pedido de prueba.
-2. Revisá el pedido y la acción del panel de aprobación, pulsá **Rechazar** y comprobá que el pedido siga pendiente.
-3. Volvé a solicitar la operación, revisá el pedido y la acción y pulsá **Aprobar** antes de que venza el panel. El backend valida la sesión y firma esa aprobación; el botón no concede scopes.
-4. Observá la respuesta segura de la API y el estado final; no confundas aceptación del modelo con autorización ni aprobación.
-5. Observá los eventos estructurados `host.tool` y `mcp.api`; comprobá que comparten `correlationId` y registrá solo la operación y el resultado HTTP, sin secretos ni cuerpo crudo.
-6. Tras una confirmación exitosa, pulsá **Repetir operación con la clave original** dentro de los 120 segundos de vigencia de esa confirmación y observá el marcador de repetición. Escribir otra vez `confirmar <ID>` crea una operación nueva y no demuestra replay.
-7. Si aparece un timeout, `503`, una desconexión o un resultado incierto, **no repitas la confirmación ni uses replay**. La interfaz no reenvía operaciones y **Reconectar** abre una sesión nueva manualmente. Seguí el procedimiento de consulta de estado del README y registrá qué quedó sin confirmar.
+Debe informar `Chat local: http://127.0.0.1:3018`. Abrí exactamente esa dirección y comprobá **Conectado** y **Modelo local**. Esta terminal muestra los logs del host y MCP; usá una **segunda terminal en la misma carpeta `inicio/`** para las comprobaciones HTTP.
 
-**Evidencia:** rechazo sin mutación, aprobación vinculada, resultado confirmado y repetición idempotente; anotá el `correlationId` y el status HTTP observado, nunca secretos o datos crudos. No infieras garantías de concurrencia ni “exactamente una vez”.
+Si editás `server.js` después de iniciar el chat, detené el host con Ctrl+C, ejecutá otra vez el comando y recargá el navegador. Ejecutar tests no recarga el proceso abierto.
 
-### 5. Nota y entrega · 5 minutos
+En el navegador:
 
-Creá `nota.md` dentro de `inicio/`, sin credenciales ni datos personales, con estas dos partes.
+1. Pulsá **Leer documentación de pedidos**. Debe aparecer el contenido de `iaew://docs/pedidos`. Lo seleccionaste explícitamente; no apareció automáticamente en el contexto del modelo.
+2. Escribí `pendientes`. Debe devolver tu pedido pendiente y solo ID/estado, total y límite de listado. Se usa `listar_pedidos_pendientes()`.
+3. Escribí `consulta <ID>`, reemplazando `<ID>` por el ID guardado. No escribas los signos `< >`. Debe aparecer la tool validada y una tarjeta autoritativa con el mismo ID y estado pendiente. Se usa `consultar_estado_pedido({ pedidoId })`.
+4. En la segunda terminal ejecutá `node --env-file=./config.local.env ../../datos-practica.mjs estado`. Compará el estado HTTP con la tarjeta. El script consulta la API directamente: es tu comprobación independiente del modelo y MCP.
+5. Escribí `consulta` sin ID. El host debe pedir el identificador y detener el flujo, sin consultar ni inventarlo.
 
-**Tabla del flujo observado.** Completala con lo que viste en los pasos 2 a 4; en «control o evidencia» anotá qué comprobaste y en qué límite ocurre, sin atribuir autorización al modelo.
+La gramática es acotada: `pendientes`, `consulta <ID>` y `confirmar <ID>`. La interfaz muestra la propuesta después de validarla y el resultado de la operación; no es un visor de todo el contexto o la respuesta cruda del modelo. El comentario opcional puede equivocarse: la tarjeta y la comprobación HTTP acreditan el dato.
 
-| Momento | Quién actúa | Qué viaja o qué ocurre | Control o evidencia |
-|---|---|---|---|
-| La persona pide consultar el pedido | | | |
-| El host valida la propuesta | | | |
-| Se invoca la tool MCP | | | |
-| Se consulta la API | | | |
-| El resultado vuelve y se responde | | | |
-| Se solicita confirmación y la persona aprueba o rechaza | | | |
-| La API ejecuta o bloquea | | | |
+### 3.4. Rechazá, aprobá y repetí la misma operación · 15 minutos
 
-**Respuestas breves.**
+Usá el **mismo pedido** y mantené abierta la página:
 
-1. ¿Qué aporta el modelo y qué estandariza MCP?
-2. ¿Quién consume MCP? ¿Cómo interactuás como usuario y dónde interviene el modelo?
-3. ¿Qué componentes, conexiones y permisos tuvieron que estar disponibles para que funcionara? Ubicá WebSocket (navegador–host), stdio (cliente–servidor MCP) y HTTP/OAuth (servidor–API), y qué componente guarda las credenciales.
-4. ¿Quién propone, valida, aprueba, autoriza y ejecuta?
-5. ¿Qué evidencia demuestra que el rechazo no modificó el pedido y que la propuesta de herramienta provino del modelo local?
+1. Escribí `confirmar <ID>`. Revisá el pedido y la acción del panel y pulsá **Rechazar**.
+2. En la segunda terminal ejecutá el comando `estado`. Debe seguir **pendiente**, con stock **10** y `eventoId: null`. Esta es tu evidencia de rechazo sin mutación.
+3. Escribí nuevamente `confirmar <ID>`. Es una **nueva solicitud**; el pendiente rechazado ya terminó. Revisá el nuevo panel y pulsá **Aprobar** antes de que venza.
+4. Esperá el resultado autoritativo **confirmado**. Ejecutá `estado` y guardá el `eventoId`: el stock debe ser **8**, porque el pedido consume dos unidades. `notificacionEstado` pasará a `procesada` cuando el worker termine; si todavía está pendiente, repetí solo la consulta `estado` unos segundos después.
+5. **Sin cerrar ni reconectar**, pulsá **Repetir operación con la clave original** antes de que venzan los 120 segundos de la aprobación firmada. La tarjeta debe indicar `Repetición: Sí`.
+6. Ejecutá `estado` otra vez. Debe seguir confirmado, con stock **8** y el **mismo `eventoId`**. Esa evidencia acredita que el replay no descontó stock ni creó otro evento en este recorrido. No prueba concurrencia ni entrega exactamente una vez bajo cualquier falla.
+7. En la terminal del host ubicá `host.tool` y `mcp.api` de una llamada: deben compartir `correlationId`. Anotá solo ID de correlación, tool, operación y resultado seguro; no copies credenciales o cuerpos completos.
 
-## Entrega
+Escribir otra vez `confirmar <ID>` después del éxito crea otra operación y **no es replay**. El permiso `confirm:pedidos` lo verifica la API; la aprobación expresa la decisión de la persona sobre la solicitud concreta. Ninguno sustituye al otro.
 
-Entregá un único archivo `apellido-nombre-clase08.zip` con el contenido de `inicio/` ya completado:
+**Ante timeout, 503, desconexión o `VERIFICAR_ESTADO`:** detené las acciones. Ejecutá `estado` y registrá lo observado; no pulses replay ni reenvíes confirmación automáticamente. Una desconexión invalida aprobaciones y replay de la sesión. La consulta puede mostrar que el pedido se confirmó aunque la respuesta se haya perdido; no supongas que falló solo porque el chat no respondió.
 
-- `src/`, `public/`, `test/`, `fixtures/`, `package.json`, `package-lock.json`, `config.example.env` y los demás archivos del armazón;
-- `nota.md` con la tabla y las respuestas;
-- `resultado-tests.txt`, generado con `npm test > resultado-tests.txt 2>&1` (debe mostrar 29 pruebas aprobadas).
+### 3.5. Guardá tu explicación · 5 minutos
 
-Excluí `node_modules/`, `config.local.env` y cualquier `.env`. Desde `inicio/` en macOS o Linux:
+Creá `nota.md` dentro de `inicio/`. Incluí:
+
+- Resultado de tests, ID del pedido ficticio y comprobaciones antes/después del rechazo, confirmación y replay. Podés registrar las salidas mínimas del script `estado`.
+- Tool validada, resultado autoritativo y `correlationId` de una operación. Identificá modelo local utilizado; no atribuyas inferencia a las fixtures de los tests.
+- Una tabla con estas columnas: `Momento | Componente responsable | Datos que intercambia | Control o evidencia`. Usá estas filas: solicitud de la persona, propuesta del modelo, validación del host, invocación MCP, llamada HTTP, aprobación/rechazo, autorización de API y respuesta.
+- Respuestas: ¿qué aporta el modelo?, ¿qué estandariza MCP?, ¿quién consume MCP?, ¿dónde están las credenciales?, ¿por qué schema, aprobación y scopes son controles diferentes?
+
+Ubicá WebSocket entre navegador y host, stdio entre cliente y servidor MCP y HTTP/OAuth entre servidor y API. Este laboratorio usa identidad M2M de operador, no autorización por dueño del pedido.
+
+## 4. Entrega
+
+Entregá `apellido-nombre-clase08.zip` con el contenido completado de `inicio/`: `src/`, `public/`, `fixtures/`, `test/`, `package.json`, `package-lock.json`, `config.example.env`, los archivos de configuración npm vacíos, `.nvmrc`, `.gitignore`, `nota.md` y `resultado-tests.txt`.
+
+Generá el último archivo:
 
 ```bash
 npm test > resultado-tests.txt 2>&1
-zip -r apellido-nombre-clase08.zip. -x "node_modules/*" "config.local.env" ".env"
 ```
 
-En Windows, comprimí la carpeta desde el explorador después de mover o borrar `node_modules` y `config.local.env`. Antes de enviar, abrí el zip y comprobá que no contiene credenciales. Para validar que funciona: descomprimilo en otra carpeta, ejecutá `npm ci` y `npm test`.
+**Control:** el archivo muestra 29/29. No alcanza con los tests: `nota.md` debe acreditar el recorrido real con modelo, MCP y API.
 
-## Criterios de logro
+En macOS/Linux, desde `inicio/`, escribí el ZIP **fuera** de la carpeta para evitar que se incluya a sí mismo:
 
-- `npm test` pasa 29/29 con los tres fragmentos completados.
-- La consulta y el listado devuelven únicamente ID y estado obtenidos de la API.
-- Se explica la diferencia entre una tool y el resource seleccionado explícitamente.
-- La nota distingue persona, host/cliente MCP, modelo, servidor MCP y API; ubica credenciales y aprobación donde corresponden.
-- La entrada ambigua detiene el flujo y requiere aclaración.
-- El rechazo de aprobación no cambia el estado.
-- La confirmación aprobada preserva scopes e idempotencia.
-- La evidencia acredita el recorrido completo con modelo local y no contiene secretos.
+```bash
+zip -r ../apellido-nombre-clase08.zip . -x "node_modules/*" "config.local.env" ".env" "*.zip" "datos-practica.json" ".npm-cache/*" ".DS_Store"
+```
 
-## Alcance y límites
+En Windows, creá una carpeta temporal fuera del repo y copiá solo los elementos enumerados arriba; comprimila con el explorador. No borres tus credenciales para comprimir: simplemente no las copies. No incluyas `node_modules`, `.env`, `config.local.env`, secretos, tokens ni datos personales.
 
-La actividad no prueba autorización por propietario, seguridad general frente a toda inyección, comportamiento concurrente ni entrega exactamente una vez. Una corrida MCP y otra Auth0 realizadas por separado no se deben presentar como una única ejecución end-to-end con modelo local.
+Abrí el ZIP antes de enviarlo. Para verificar la entrega, extraelo en otra carpeta e instalá con el mismo `npm ci` del paso 2.4; ejecutá `npm run check` y `npm test`. Deben pasar 29/29. Para ejecutar el chat integrado desde esa copia se requiere además el repo con la API, el modelo y configuración local nueva: no se incluyen servicios ni credenciales en la entrega.
 
+## 5. Si algo no funciona
 
-El zip no debe incluir `.env`, `config.local.env`, tokens, claves de aprobación, emails ni payloads completos.
+| Síntoma | Qué revisar antes de continuar |
+|---|---|
+| `node` antiguo o `--env-file` falla | Abrí una terminal con Node ≥22.17.0. |
+| Docker no responde | Abrí Docker Desktop; comprobá `docker info`. |
+| `Falta ...` en archivos | Carpeta y rama `main`; no falta descargar un repo diferente. |
+| `ECONNREFUSED` / timeout con Ollama | Servicio Ollama activo en 11434; modelo descargado y preflight aprobado. |
+| HTTP 401 en preparación o MCP | Dominio sin prefijo, audience correcto y credenciales M2M autorizadas. |
+| HTTP 403 o `SCOPE_INSUFFICIENT` | Scopes efectivos de Auth0; no se resuelve ampliando permisos del modelo. |
+| Error al crear producto | `INTERNAL_API_KEY` idéntica en el archivo usado por Compose y el script; si la cambiaste, recreá los servicios con `up`. |
+| Puerto 3008 o 3018 ocupado | Detené solo la instancia propia que lo usa; no inicies dos hosts. |
+| `pendientes` no descubre su tool | Completá C, reiniciá host y recargá. |
+| Suite inicial distinta de 23/29 | Revisá instalación y cambios; la versión inicial tiene seis fallas intencionales. |
+| Suite completada no pasa 29/29 | Revisá A, B y C sin modificar políticas ni tests. |
+| Confirmación con conflicto 409 | Verificá el ID: posiblemente ya fue confirmado con otra clave. No confundas nueva confirmación con replay. |
+| Stock 8 pero notificación pendiente | Consultá otra vez el estado y revisá logs del worker; no confirmes de nuevo. |
+| Reconectaste y no hay replay | Era propio de la sesión anterior; no se recupera ni reenvía automáticamente. |
+
+Si una dependencia sigue fallando, guardá el error seguro y pedí ayuda al docente. El recorrido sin modelo no es una resolución alternativa de esta actividad.
+
+## 6. Cierre del entorno
+
+Detené el host con Ctrl+C y luego, desde `inicio/`:
+
+```bash
+docker compose --env-file ./config.local.env -f ../compose.yaml down
+```
+
+Esto detiene únicamente el proyecto de Clase 08; el volumen conserva sus datos. No agregues `-v` salvo que quieras borrar expresamente esa base de laboratorio después de guardar evidencia. Cerrá Ollama si no lo vas a seguir usando. Conservá tus credenciales solo en el archivo local ignorado por Git.

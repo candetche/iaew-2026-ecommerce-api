@@ -16,3 +16,12 @@ Evidencia técnica del 17/10/2026; empaquetado para el repositorio el 19/10/2026
 Revisado desde alumno simulado, docente y especialista IA. Ajustes incorporados: reiniciar host tras editar mapper; pedir una nueva confirmación después de rechazar; recuperación RAG sin exigir embeddings. Sin hallazgos importantes abiertos dentro del alcance revisado. La revisión simulada no prueba aprendizaje real.
 
 Pendiente: una persona operando la demo y ensayo hablado/cronometrado de 15 minutos de la [guía docente](guia-docente.md). Los clics automatizados no acreditan aprobación humana. No se acredita instalación limpia en todos los sistemas, seguridad general ante cualquier inyección ni entrega exactamente una vez. No hay autorización por propietario: se usa una identidad M2M de operador del laboratorio.
+
+
+## Comprobación desde copia limpia — 19/10/2026
+
+Se extrajo una copia nueva del repositorio y se incorporaron los cambios locales propuestos para publicación. Sin `node_modules` ni configuración previa: `npm ci` y sintaxis aprobados; armazón 23/29 con seis fallas previstas. Aplicando solo los tres bloques de código de la actividad: 29/29. Se levantó el Compose de Clase 08 reutilizando la API/worker de Clase 07; cuatro servicios disponibles. Auth0 real validó la identidad y los scopes, y el script incluido creó producto/pedido ficticios. Ollama pasó el preflight (primera carga 8984 ms; ciclos calientes 1099, 1248 y 1908 ms).
+
+Diez comprobaciones WebSocket con inferencia real aprobadas: resource, listado implementado desde el MD, consulta, aclaración de ID, rechazo sin mutación, aprobación, stock 10→8, replay con el mismo evento y procesamiento del worker. La aprobación fue automatizada, no humana. Se comprobó el comando ZIP y sus exclusiones. [Evidencia segura](recursos/evidencias/validacion-desde-cero.json).
+
+La actividad ahora incluye preparación completa en el mismo Markdown. Requiere herramientas instaladas, acceso de red y una identidad M2M autorizada que no se distribuye en Git. No se afirma una instalación limpia de cada sistema operativo ni una publicación remota de estos cambios locales. Los pasos de clase y pruebas se realizaron en copia temporal; el armazón distribuido conserva sus tres TODO.

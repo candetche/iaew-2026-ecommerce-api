@@ -7,7 +7,9 @@ El paquete tiene dos proyectos independientes:
 
 ## Antes de la práctica
 
-La base de la API es Clase 07, rama publicada `clase-08-inicio`. Seguí su [README](../../../clase-07/recursos/laboratorio/README.md) y dejá la API local disponible en `http://127.0.0.1:3008`. En ese contrato, la consulta es `GET /pedidos` con `read:pedidos`; no existe `GET /pedidos/:id`. La tool filtra la lista en el adaptador MCP y sólo entrega ID y estado. La confirmación usa la ruta existente `POST /pedidos/:id/confirmar` y `confirm:pedidos`.
+La [actividad autocontenida](../../actividad-practica.md) es el punto de entrada desde un clon nuevo de `main`. Este laboratorio incluye `compose.yaml`, que reutiliza el código de API/worker de Clase 07 y levanta MongoDB/RabbitMQ sin el stack gráfico LGTM. Desde `inicio/`, con `config.local.env` preparado, ejecutá `docker compose --env-file ./config.local.env -f ../compose.yaml up -d --build --wait --wait-timeout 180` y `node --env-file=./config.local.env ../../datos-practica.mjs preparar`. La API queda en `http://127.0.0.1:3008`. `node --env-file=./config.local.env ../../datos-practica.mjs estado` comprueba el pedido directamente por HTTP sin imprimir tokens. La actividad contiene instalación, scopes, controles esperados y datos ficticios; no presupone otra práctica ejecutada.
+
+El contrato conserva `GET /pedidos` y `POST /pedidos/:id/confirmar`; no existe `GET /pedidos/:id`. El adaptador proyecta solo ID y estado. La identidad M2M necesita `read:pedidos`, `write:pedidos` para preparar datos y `confirm:pedidos`.
 
 Para el recorrido obligatorio, prepará Node.js 22.17.0, Ollama con `llama3.2:3b` descargado y ejecutá antes el preflight de [preparación de entorno](../../preparacion-entorno.md). El chat debe mostrar **Modelo local**; las pruebas automatizadas aisladas no sustituyen la inferencia de la actividad.
 

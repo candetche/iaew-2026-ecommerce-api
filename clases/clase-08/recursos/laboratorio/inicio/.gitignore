@@ -3,3 +3,5 @@ node_modules/
 config.local.env
 .env
 *.log
+datos-practica.json
+*.zip

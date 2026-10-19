@@ -1,6 +1,6 @@
 # Clase 08 — Preparación del modelo y del chat web local
 
-Completá esta preparación antes de la clase. La descarga del modelo y la instalación no forman parte de los 45 minutos de actividad. El modelo local es obligatorio y no requiere una suscripción paga. Si el preflight falla, resolvé la preparación con el docente antes de iniciar la actividad.
+La guía autocontenida y vigente desde un clon nuevo es la [actividad práctica, sección 2](actividad-practica.md#2-preparación-desde-cero--antes-de-iniciar-los-45-minutos). Completá esta preparación antes de la clase. La descarga del modelo y la instalación no forman parte de los 45 minutos de actividad. El modelo local es obligatorio y no requiere una suscripción paga. Si el preflight falla, resolvé la preparación con el docente antes de iniciar la actividad.
 
 ## 1. Identificá qué vas a instalar
 
@@ -89,7 +89,7 @@ Fuentes de instalación: [inicio oficial](https://docs.ollama.com/quickstart), [
 
 ## 7. Iniciá el chat web del laboratorio
 
-Esta preparación se completa antes de los 45 minutos. La interfaz viene construida; durante la práctica completás los tres fragmentos de `src/server.js` indicados en la actividad. Iniciá primero la API de Clase 07 y sus dependencias según su guía; la API debe estar en `http://127.0.0.1:3008`.
+Esta preparación se completa antes de los 45 minutos. La interfaz viene construida; durante la práctica completás los tres fragmentos de `src/server.js` indicados en la actividad. Desde `inicio/`, iniciá el Compose de Clase 08 con `docker compose --env-file ./config.local.env -f ../compose.yaml up -d --build --wait --wait-timeout 180`. Reutiliza la API de Clase 07 y la publica en `http://127.0.0.1:3008`; el script `node --env-file=./config.local.env ../../datos-practica.mjs preparar` crea los datos ficticios. Seguí el orden completo de la actividad.
 
 Abrí una terminal dentro de `recursos/laboratorio/inicio/` (o `solucion-docente/` para el docente). Prepará `config.local.env` como indica el README del laboratorio. Instalá las dependencias locales con el lockfile:
 

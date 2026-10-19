@@ -1,0 +1,58 @@
+name: iaew-clase08
+# Reutiliza la API y el worker de Clase 07, sin levantar el stack gráfico LGTM.
+x-app: &app
+  build:
+    context: ../../../clase-07/recursos/laboratorio
+  init: true
+  environment: &app-env
+    MONGODB_URI: mongodb://mongodb:27017/iaew_clase08
+    RABBIT_URL: amqp://iaew:iaew-local@rabbitmq:5672
+    AUTH0_DOMAIN: ${AUTH0_DOMAIN:?Completar AUTH0_DOMAIN en config.local.env}
+    AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:?Completar AUTH0_AUDIENCE en config.local.env}
+    INTERNAL_API_KEY: ${INTERNAL_API_KEY:-iaew-clase08-local}
+    MAX_RETRIES: 3
+    RETRY_DELAY_MS: 3000
+  depends_on:
+    mongodb: {condition: service_healthy}
+    rabbitmq: {condition: service_healthy}
+services:
+  mongodb:
+    image: mongo:7.0.21
+    volumes: [mongo-data:/data/db]
+    healthcheck:
+      test: [CMD, mongosh, --quiet, --eval, "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  rabbitmq:
+    image: rabbitmq:4.2.0-management
+    environment:
+      RABBITMQ_DEFAULT_USER: iaew
+      RABBITMQ_DEFAULT_PASS: iaew-local
+      RUNNING_UNDER_SYSTEMD: "true"
+    healthcheck:
+      test: [CMD, rabbitmq-diagnostics, -q, ping]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  api:
+    <<: *app
+    command: [node, src/app.js]
+    ports: ["127.0.0.1:${API_PORT:-3008}:3000"]
+    environment:
+      <<: *app-env
+      PORT: 3000
+      OTEL_SERVICE_NAME: pedidos-api
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  worker:
+    <<: *app
+    command: [node, src/worker.js]
+    environment:
+      <<: *app-env
+      OTEL_SERVICE_NAME: pedidos-worker
+volumes:
+  mongo-data:

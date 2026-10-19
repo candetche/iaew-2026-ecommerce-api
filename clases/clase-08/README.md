@@ -4,7 +4,7 @@ La clase parte de la API de pedidos de las clases anteriores y agrega una interf
 
 ## Orden de lectura
 
-1. [Preparación del entorno](preparacion-entorno.md): instalar Ollama, descargar el modelo y ejecutar el preflight antes de clase.
+1. [Actividad autocontenida desde cero](actividad-practica.md): clonar el repo, instalar herramientas, configurar identidad, iniciar servicios y completar el servidor. La sección 2 se realiza antes de clase.
 2. [Presentación](presentacion/index.html) y [notas del orador](presentacion/presenter.html).
 3. [Material adicional](material-adicional/material-completo.md): fundamentos, arquitectura, seguridad y rutas opcionales.
 4. [Actividad práctica individual](actividad-practica.md), de 45 minutos.
@@ -13,7 +13,7 @@ La clase parte de la API de pedidos de las clases anteriores y agrega una interf
 
 ## Chat web local
 
-Iniciá primero la API de Clase 07 en el puerto `3008`. Prepará `config.local.env` y las dependencias desde `recursos/laboratorio/inicio/` (o `solucion-docente/` para la demo), según la [preparación del entorno](preparacion-entorno.md#7-iniciá-el-chat-web-del-laboratorio). Después ejecutá:
+Seguí primero la sección 2 de la [actividad](actividad-practica.md): el Compose de Clase 08 reutiliza la API de Clase 07 y la publica en `3008`. Prepará `config.local.env` y las dependencias desde `recursos/laboratorio/inicio/` (o `solucion-docente/` para la demo), según la [preparación del entorno](preparacion-entorno.md#7-iniciá-el-chat-web-del-laboratorio). Después ejecutá:
 
 ```bash
 node --env-file=./config.local.env src/web.js
