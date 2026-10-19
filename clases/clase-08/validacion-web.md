@@ -6,10 +6,10 @@ Evidencia técnica del 17/10/2026; empaquetado para el repositorio el 19/10/2026
 - Solución: 26/26 pruebas. Inicio: 24/26 por las dos fallas dependientes del único mapper. Copia temporal completando únicamente el mapper: 26/26.
 - Integración real: 11/11 comprobaciones con WebSocket, modelo local, MCP, Auth0 y API. Consulta, rechazo sin mutación, confirmación con aprobación automatizada, replay con clave original sin duplicar stock/evento, worker y credencial sin scopes rechazada por API con 403.
 - Muestra docente: consulta completa 6916 ms; confirmación con aprobación automatizada 1302 ms. No extrapolar a hardware estudiantil ni tiempo humano de decisión.
-- Navegador real automatizado: resource, consulta, rechazo, nueva solicitud, aprobación y tarjeta «Repetición: Sí»..
+- Navegador real automatizado: resource, consulta, rechazo, nueva solicitud, aprobación y tarjeta «Repetición: Sí».
 - Regresiones web: Origin/cookie, aislamiento de sesiones, aprobación cruzada, mensajes inválidos/duplicados, expiración/desconexión, límites, replay fallido y resultado autoritativo ante comentario vacío o contradictorio. Sintaxis y ocho regresiones web aprobadas tras el último ajuste de auditoría.
 - Fixture de interfaz separado: resultado indeterminado sin replay; HTML hostil mostrado como texto. No equivale a ejecución contra API real.
-- Presentación: 29 diapositivas y 29 notas; geometría sin solapamiento con el pie y revisión visual del.
+- Presentación: 29 diapositivas y 29 notas; geometría sin solapamiento con el pie y revisión visual del diagrama de conexiones.
 
 ## Revisión y límites
 
