@@ -16,6 +16,53 @@ API de pedidos → MongoDB / RabbitMQ → worker
 
 El modelo propone una herramienta y sus argumentos; no ejecuta la API directamente. El host valida la propuesta, la persona aprueba las confirmaciones y la API verifica permisos y reglas de negocio. El resultado real se muestra separado del comentario opcional del modelo.
 
+### 1.1. Componentes: qué son y dónde están
+
+Las rutas de esta tabla parten de `clases/clase-08/recursos/laboratorio/inicio/`, salvo la API, Compose y los servicios externos, indicados expresamente. **Tu carpeta de trabajo es `inicio/`; el archivo que vas a programar es `servidor-mcp/server.js`.**
+
+| Componente | Dónde está | Para qué sirve y qué vas a hacer |
+|---|---|---|
+| **Chat web** | `chat-web/index.html`, `app.js` y `styles.css` | Pantalla que abrís en el navegador. Escribís solicitudes y usás Aprobar/Rechazar; no modificás estos archivos. |
+| **Servidor web del host** | `host/web.js` | Sirve la pantalla y recibe WebSocket. Lo iniciás con Node después de completar el código; no lo modificás. |
+| **Coordinador y cliente MCP** | `host/host.js` | Llama al modelo, valida la propuesta y usa el cliente MCP para invocar herramientas. Ya está implementado. |
+| **Servidor MCP** | `servidor-mcp/server.js` | Publica tools y el resource, llama a la API y reduce su respuesta. **Acá completás los tres TODO de la actividad.** |
+| **Validaciones y aprobación** | `compartido/security.js` | Define validaciones y firma/verificación de aprobaciones. Se importa desde otros componentes; no es otro servicio y no lo modificás. |
+| **Pruebas y datos de prueba** | `test/` y `fixtures/` | Comprueban el código en situaciones controladas. Ejecutás `npm test`; no cambiás los tests para hacerlos pasar. |
+| **Configuración personal** | `config.local.env` | Completás dominio, audience y credenciales M2M. Queda fuera de Git y de la entrega. |
+| **Servicios de la API** | `../compose.yaml`, desde `inicio/` | Levanta API, MongoDB, RabbitMQ y worker. Lo ejecutás con Docker Compose; no tenés que construir esos servicios. |
+| **Código de API y worker** | Desde la raíz del repo: `clases/clase-07/recursos/laboratorio/src/` | Sistema de pedidos que reutiliza el Compose de Clase 08. No modificás ese código en esta actividad. |
+| **Modelo local** | Ollama, instalado fuera del repo, en el puerto `11434` | Descargás `llama3.2:3b`, iniciás Ollama y validás inferencia con el preflight. Los pesos del modelo no están en Git. |
+| **Proveedor de identidad** | Auth0, fuera del repo | Emite el token para que el servidor acceda a la API. Usás una aplicación M2M previamente autorizada. |
+
+#### Estructura de la carpeta de trabajo
+
+```text
+inicio/                         # Proyecto Node: ejecutar npm ci y npm test acá
+├── chat-web/                   # Código que ejecuta el navegador
+│   ├── index.html              # Página, formulario y botones
+│   ├── app.js                  # Mensajes WebSocket y presentación de resultados
+│   └── styles.css              # Estilos de la interfaz
+├── host/                       # Backend que atiende al navegador y coordina el modelo
+│   ├── web.js                  # Sirve el chat y recibe conexiones WebSocket
+│   ├── host.js                 # Ollama, validación de propuestas y cliente MCP
+│   └── cli.js                  # Utilidad técnica de terminal; no se usa en la actividad
+├── servidor-mcp/               # Proceso que publica capacidades MCP
+│   └── server.js               # Tools, resource y adaptación a la API HTTP; editás acá
+├── compartido/
+│   └── security.js             # Validación de intención/propuesta y firma/verificación de aprobación
+├── test/                       # Pruebas automáticas de los componentes
+├── fixtures/                   # Datos controlados para esas pruebas
+├── package.json                # Dependencias y comandos de todo el proyecto
+├── config.example.env          # Plantilla sin credenciales reales
+└── config.local.env            # Tu configuración privada, no incluida en Git
+```
+
+**Las carpetas separan responsabilidades, no son cuatro instalaciones:** ejecutás `npm ci` una sola vez desde `inicio/`. El frontend usa JavaScript del navegador; no necesita otro servidor ni instalar npm dentro de `chat-web/`.
+
+Al iniciar `node --env-file=./config.local.env host/web.js`, el host sirve los archivos de `chat-web/` y recibe WebSocket. Cuando el navegador conecta, el host inicia `servidor-mcp/server.js` como proceso hijo y se comunica con él por stdio. No tenés que iniciar MCP en otra terminal. Ollama es un servicio aparte en 11434 y la API es otro servicio en 3008, levantado por Compose con el código de Clase 07. `compartido/` no es un servicio: es código importado por los componentes que lo necesitan.
+
+### 1.2. Qué vas a completar
+
 El repositorio incluye la página del chat y el código que conecta sus mensajes con el modelo y con MCP. También incluye la operación para confirmar pedidos, los botones para aprobarla o rechazarla y las pruebas automáticas. No tenés que construir esas partes.
 
 Tu trabajo está en `clases/clase-08/recursos/laboratorio/inicio/servidor-mcp/server.js`. Ese archivo tiene tres partes incompletas, marcadas con `TODO`:
@@ -79,33 +126,6 @@ node -e "const fs=require('node:fs');for(const p of ['package.json','package-loc
 ```
 
 **Control:** debe decir `Archivos encontrados`. Si falta Clase 08, revisá la rama o consultá si el docente ya publicó el paquete. No crees archivos vacíos para eludir este control.
-
-#### Qué hay en cada carpeta
-
-```text
-inicio/                         # Proyecto Node: ejecutar npm ci y npm test acá
-├── chat-web/                   # Código que ejecuta el navegador
-│   ├── index.html              # Página, formulario y botones
-│   ├── app.js                  # Mensajes WebSocket y presentación de resultados
-│   └── styles.css              # Estilos de la interfaz
-├── host/                       # Backend que atiende al navegador y coordina el modelo
-│   ├── web.js                  # Sirve el chat y recibe conexiones WebSocket
-│   ├── host.js                 # Ollama, validación de propuestas y cliente MCP
-│   └── cli.js                  # Utilidad técnica de terminal; no se usa en la actividad
-├── servidor-mcp/               # Proceso que publica capacidades MCP
-│   └── server.js               # Tools, resource y adaptación a la API HTTP; editás acá
-├── compartido/
-│   └── security.js             # Validación de intención/propuesta y firma/verificación de aprobación
-├── test/                       # Pruebas automáticas de los componentes
-├── fixtures/                   # Datos controlados para esas pruebas
-├── package.json                # Dependencias y comandos de todo el proyecto
-├── config.example.env          # Plantilla sin credenciales reales
-└── config.local.env            # Tu configuración privada, no incluida en Git
-```
-
-**Las carpetas separan responsabilidades, no son cuatro instalaciones:** ejecutás `npm ci` una sola vez desde `inicio/`. El frontend usa JavaScript del navegador; no necesita otro servidor ni instalar npm dentro de `chat-web/`.
-
-Al iniciar `node --env-file=./config.local.env host/web.js`, el host sirve los archivos de `chat-web/` y recibe WebSocket. Cuando el navegador conecta, el host inicia `servidor-mcp/server.js` como proceso hijo y se comunica con él por stdio. No tenés que iniciar MCP en otra terminal. Ollama es un servicio aparte en 11434 y la API es otro servicio en 3008, levantado por Compose con el código de Clase 07. `compartido/` no es un servicio: es código importado por los componentes que lo necesitan.
 
 ### 2.3. Configurá la identidad de la API
 
