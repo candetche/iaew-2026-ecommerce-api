@@ -73,7 +73,7 @@ Tu trabajo está en `clases/clase-08/recursos/laboratorio/inicio/servidor-mcp/se
 
 La sección 3.2 explica dónde agregar cada bloque, incluye el código completo y muestra cómo comprobar que funciona. Trabajá sobre la carpeta `inicio/`, que contiene los tres puntos pendientes de la actividad.
 
-**Modalidad:** individual. **Práctica:** 45 minutos después de preparar el entorno. **Entrega:** un ZIP del proyecto completado, una nota y resultados de pruebas. La instalación y las descargas pueden tardar bastante: hacé la sección 2 antes de clase.
+**Modalidad:** individual. **Práctica:** 45 minutos después de preparar el entorno. **Entrega:** un ZIP del proyecto completado y el resultado de las pruebas. La instalación y las descargas pueden tardar bastante: hacé la sección 2 antes de clase.
 
 Este documento contiene el recorrido desde la descarga del repo. No necesitás haber ejecutado otra actividad. El Compose incluido reutiliza el código de la API de Clase 07 que ya está en el mismo repositorio; levanta API, MongoDB, RabbitMQ y worker. La actividad observa logs y correlación del host/MCP; no requiere iniciar Grafana ni el stack completo de observabilidad.
 
@@ -446,7 +446,7 @@ En el navegador:
 
 La gramática es acotada: `pendientes`, `consulta <ID>` y `confirmar <ID>`. La interfaz muestra la propuesta después de validarla y el resultado de la operación; no es un visor de todo el contexto o la respuesta cruda del modelo. El comentario opcional puede equivocarse: la tarjeta y la comprobación HTTP acreditan el dato.
 
-### 3.4. Rechazá, aprobá y repetí la misma operación · 15 minutos
+### 3.4. Rechazá, aprobá y repetí la misma operación · 20 minutos
 
 Usá el **mismo pedido** y mantené abierta la página:
 
@@ -462,20 +462,9 @@ Escribir otra vez `confirmar <ID>` después del éxito crea otra operación y **
 
 **Ante timeout, 503, desconexión o `VERIFICAR_ESTADO`:** detené las acciones. Ejecutá `estado` y registrá lo observado; no pulses replay ni reenvíes confirmación automáticamente. Una desconexión invalida aprobaciones y replay de la sesión. La consulta puede mostrar que el pedido se confirmó aunque la respuesta se haya perdido; no supongas que falló solo porque el chat no respondió.
 
-### 3.5. Guardá tu explicación · 5 minutos
-
-Creá `nota.md` dentro de `inicio/`. Incluí:
-
-- Resultado de tests, ID del pedido ficticio y comprobaciones antes/después del rechazo, confirmación y replay. Podés registrar las salidas mínimas del script `estado`.
-- Tool validada, resultado autoritativo y `correlationId` de una operación. Identificá modelo local utilizado; no atribuyas inferencia a las fixtures de los tests.
-- Una tabla con estas columnas: `Momento | Componente responsable | Datos que intercambia | Control o evidencia`. Usá estas filas: solicitud de la persona, propuesta del modelo, validación del host, invocación MCP, llamada HTTP, aprobación/rechazo, autorización de API y respuesta.
-- Respuestas: ¿qué aporta el modelo?, ¿qué estandariza MCP?, ¿quién consume MCP?, ¿dónde están las credenciales?, ¿por qué schema, aprobación y scopes son controles diferentes?
-
-Ubicá WebSocket entre navegador y host, stdio entre cliente y servidor MCP y HTTP/OAuth entre servidor y API. Este laboratorio usa identidad M2M de operador, no autorización por dueño del pedido.
-
 ## 4. Entrega
 
-Entregá `apellido-nombre-clase08.zip` con el contenido completado de `inicio/`: `servidor-mcp/`, `host/`, `chat-web/`, `compartido/`, `fixtures/`, `test/`, `package.json`, `package-lock.json`, `config.example.env`, los archivos de configuración npm vacíos, `.nvmrc`, `.gitignore`, `nota.md` y `resultado-tests.txt`.
+Entregá `apellido-nombre-clase08.zip` con el contenido completado de `inicio/`: `servidor-mcp/`, `host/`, `chat-web/`, `compartido/`, `fixtures/`, `test/`, `package.json`, `package-lock.json`, `config.example.env`, los archivos de configuración npm vacíos, `.nvmrc`, `.gitignore` y `resultado-tests.txt`.
 
 Generá el último archivo:
 
@@ -483,7 +472,7 @@ Generá el último archivo:
 npm test > resultado-tests.txt 2>&1
 ```
 
-**Control:** el archivo muestra 29/29. No alcanza con los tests: `nota.md` debe acreditar el recorrido real con modelo, MCP y API.
+**Control:** el archivo muestra 29/29.
 
 En macOS/Linux, desde `inicio/`, escribí el ZIP **fuera** de la carpeta para evitar que se incluya a sí mismo:
 
