@@ -4,12 +4,12 @@ Evidencia técnica del 17/10/2026; empaquetado para el repositorio el 19/10/2026
 
 - Node 22.17.0, MCP SDK 1.32.1, Zod 4.6.7, ws 8.22.0 y Ollama con llama3.2:3b.
 - Solución: 26/26 pruebas. Inicio: 24/26 por las dos fallas dependientes del único mapper. Copia temporal completando únicamente el mapper: 26/26.
-- Integración real: 11/11 comprobaciones con WebSocket, modelo local, MCP, Auth0 y API. Consulta, rechazo sin mutación, confirmación con aprobación automatizada, replay con clave original sin duplicar stock/evento, worker y credencial sin scopes rechazada por API con 403. [Resultado registrado](recursos/evidencias/validacion-web-runtime.json).
+- Integración real: 11/11 comprobaciones con WebSocket, modelo local, MCP, Auth0 y API. Consulta, rechazo sin mutación, confirmación con aprobación automatizada, replay con clave original sin duplicar stock/evento, worker y credencial sin scopes rechazada por API con 403.
 - Muestra docente: consulta completa 6916 ms; confirmación con aprobación automatizada 1302 ms. No extrapolar a hardware estudiantil ni tiempo humano de decisión.
-- Navegador real automatizado: resource, consulta, rechazo, nueva solicitud, aprobación y tarjeta «Repetición: Sí». [Captura del chat](recursos/evidencias/clase08-chat-web-final.png).
+- Navegador real automatizado: resource, consulta, rechazo, nueva solicitud, aprobación y tarjeta «Repetición: Sí»..
 - Regresiones web: Origin/cookie, aislamiento de sesiones, aprobación cruzada, mensajes inválidos/duplicados, expiración/desconexión, límites, replay fallido y resultado autoritativo ante comentario vacío o contradictorio. Sintaxis y ocho regresiones web aprobadas tras el último ajuste de auditoría.
 - Fixture de interfaz separado: resultado indeterminado sin replay; HTML hostil mostrado como texto. No equivale a ejecución contra API real.
-- Presentación: 29 diapositivas y 29 notas; geometría sin solapamiento con el pie y revisión visual del [diagrama de conexiones](recursos/evidencias/clase08-conexiones.png).
+- Presentación: 29 diapositivas y 29 notas; geometría sin solapamiento con el pie y revisión visual del.
 
 ## Revisión y límites
 
@@ -22,7 +22,7 @@ Pendiente: una persona operando la demo y ensayo hablado/cronometrado de 15 minu
 
 Se extrajo una copia nueva del repositorio y se incorporaron los cambios locales propuestos para publicación. Sin `node_modules` ni configuración previa: `npm ci` y sintaxis aprobados; armazón 23/29 con seis fallas previstas. Aplicando solo los tres bloques de código de la actividad: 29/29. Se levantó el Compose de Clase 08 reutilizando la API/worker de Clase 07; cuatro servicios disponibles. Auth0 real validó la identidad y los scopes, y el script incluido creó producto/pedido ficticios. Ollama pasó el preflight (primera carga 8984 ms; ciclos calientes 1099, 1248 y 1908 ms).
 
-Diez comprobaciones WebSocket con inferencia real aprobadas: resource, listado implementado desde el MD, consulta, aclaración de ID, rechazo sin mutación, aprobación, stock 10→8, replay con el mismo evento y procesamiento del worker. La aprobación fue automatizada, no humana. Se comprobó el comando ZIP y sus exclusiones. [Evidencia segura](recursos/evidencias/validacion-desde-cero.json).
+Diez comprobaciones WebSocket con inferencia real aprobadas: resource, listado implementado desde el MD, consulta, aclaración de ID, rechazo sin mutación, aprobación, stock 10→8, replay con el mismo evento y procesamiento del worker. La aprobación fue automatizada, no humana. Se comprobó el comando ZIP y sus exclusiones..
 
 La actividad ahora incluye preparación completa en el mismo Markdown. Requiere herramientas instaladas, acceso de red y una identidad M2M autorizada que no se distribuye en Git. No se afirma una instalación limpia de cada sistema operativo ni una publicación remota de estos cambios locales. Los pasos de clase y pruebas se realizaron en copia temporal; el armazón distribuido conserva sus tres TODO.
 
