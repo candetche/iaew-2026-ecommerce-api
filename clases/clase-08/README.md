@@ -8,8 +8,7 @@ La clase parte de la API de pedidos de las clases anteriores y agrega una interf
 2. [Presentación](presentacion/index.html) y [notas del orador](presentacion/presenter.html).
 3. [Material adicional](material-adicional/material-completo.md): fundamentos, arquitectura, seguridad y rutas opcionales.
 4. [Actividad práctica individual](actividad-practica.md), de 45 minutos.
-5. [Guía docente](guia-docente.md).
-6. [Laboratorio](recursos/laboratorio/README.md): armazón estudiantil y pruebas.
+5. [Laboratorio](recursos/laboratorio/README.md): armazón estudiantil y pruebas.
 
 ## Chat web local
 

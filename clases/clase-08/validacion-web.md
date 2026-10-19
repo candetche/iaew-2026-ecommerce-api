@@ -15,7 +15,7 @@ Evidencia técnica del 17/10/2026; empaquetado para el repositorio el 19/10/2026
 
 Revisado desde alumno simulado, docente y especialista IA. Ajustes incorporados: reiniciar host tras editar mapper; pedir una nueva confirmación después de rechazar; recuperación RAG sin exigir embeddings. Sin hallazgos importantes abiertos dentro del alcance revisado. La revisión simulada no prueba aprendizaje real.
 
-Pendiente: una persona operando la demo y ensayo hablado/cronometrado de 15 minutos de la [guía docente](guia-docente.md). Los clics automatizados no acreditan aprobación humana. No se acredita instalación limpia en todos los sistemas, seguridad general ante cualquier inyección ni entrega exactamente una vez. No hay autorización por propietario: se usa una identidad M2M de operador del laboratorio.
+Pendiente: una persona operando la demo y ensayo hablado/cronometrado de 15 minutos de la demo. Los clics automatizados no acreditan aprobación humana. No se acredita instalación limpia en todos los sistemas, seguridad general ante cualquier inyección ni entrega exactamente una vez. No hay autorización por propietario: se usa una identidad M2M de operador del laboratorio.
 
 
 ## Comprobación desde copia limpia — 19/10/2026
