@@ -1,0 +1,59 @@
+
+> iaew-clase08-t03-inicio@1.0.0 test
+> node --test
+
+✔ MCP descubre tres tools con schemas de salida y el resource estático (102.166459ms)
+✔ listado de pendientes filtra por estado, limita a 10 y proyecta sólo ID y estado (107.938166ms)
+✔ listado de pendientes informa errores de la API sin datos crudos (105.31175ms)
+{"event":"host.tool","correlationId":"8bb7ac4d-5136-4df3-b38e-80eac1811074","tool":"listar_pedidos_pendientes","operation":"listar_pedidos_pendientes","result":"dispatched"}
+{"event":"host.tool","correlationId":"8bb7ac4d-5136-4df3-b38e-80eac1811074","tool":"listar_pedidos_pendientes","operation":"listar_pedidos_pendientes","result":"ok","durationMs":16}
+✔ el host ejecuta el listado sin aprobación y no acepta argumentos propuestos por el modelo (105.652167ms)
+✔ consulta proyecta sólo ID y estado, excluye PII e inyección indirecta (100.195875ms)
+✔ ID inválido y pedido ausente devuelven errores con el schema mínimo (100.218917ms)
+{"event":"host.approval","correlationId":"a3ac7ec1-2bf5-4044-917f-4e954f59747a","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"rejected"}
+{"event":"host.approval","correlationId":"3b6af6d8-5a22-4661-a2f8-5f00cb21e658","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"approved"}
+{"event":"host.tool","correlationId":"3b6af6d8-5a22-4661-a2f8-5f00cb21e658","tool":"confirmar_pedido","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"dispatched"}
+{"event":"host.tool","correlationId":"3b6af6d8-5a22-4661-a2f8-5f00cb21e658","tool":"confirmar_pedido","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"confirmado","durationMs":1}
+✔ confirmación sin aprobación o con booleano no muta el pedido (83.729042ms)
+✔ aprobación sólo se emite ante texto exacto y queda vinculada a acción/pedido (0.289041ms)
+✔ propuesta de modelo debe coincidir exactamente con la intención explícita (0.141291ms)
+✔ el host detiene la inyección directa y pide el ID faltante sin llamar al modelo/tool (0.350167ms)
+✔ host rechaza la confirmación si el operador no aprueba exactamente (0.148667ms)
+✔ host firma aprobación ligada a operación e ID y conserva la clave fuera de argumentos (0.231541ms)
+✔ confirmación exacta aprobada funciona y replay conserva la clave idempotente (111.486791ms)
+✔ firma alterada, aprobación de otro pedido y vencimiento no mutan (87.5855ms)
+✔ scope insuficiente se distingue y no cambia el pedido (121.419625ms)
+✔ conflicto de negocio devuelve error mínimo y no presenta datos crudos (101.561667ms)
+✔ 503 se informa como parcial y no se reintenta automáticamente (98.931583ms)
+{"event":"host.tool","correlationId":"d26e143e-3459-401e-aa8e-576a8830d7e7","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"dispatched"}
+{"event":"host.tool","correlationId":"d26e143e-3459-401e-aa8e-576a8830d7e7","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"pendiente","durationMs":0}
+✔ timeout de POST informa estado indeterminado sin segundo POST (5100.152459ms)
+✔ límite de entrada bloquea propuestas y salida del modelo supera el límite (1.028709ms)
+✔ el host no acepta texto del modelo como sustituto de la tool requerida (0.1895ms)
+{"event":"host.tool","correlationId":"9907134b-e938-448d-a9b7-e068c25059f2","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"dispatched"}
+{"event":"host.tool","correlationId":"9907134b-e938-448d-a9b7-e068c25059f2","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"pendiente","durationMs":15}
+✔ el host no pasa texto malicioso de respuesta indirecta al modelo (128.830417ms)
+✔ WebSocket rechaza Origin ajeno y cookie ausente (9.447625ms)
+✔ resource explícito, JSON inválido y requestId repetido no ejecutan tools (10.247208ms)
+{"event":"host.approval","correlationId":"11f4c442-13cc-4507-bb7d-c78847716a0c","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"approved"}
+{"event":"host.tool","correlationId":"11f4c442-13cc-4507-bb7d-c78847716a0c","tool":"confirmar_pedido","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"dispatched"}
+{"event":"host.tool","correlationId":"11f4c442-13cc-4507-bb7d-c78847716a0c","tool":"confirmar_pedido","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"confirmado","durationMs":0}
+✔ aprobación de otra sesión rechazada; replay original conserva clave y efecto único (6.543ms)
+{"event":"host.approval","correlationId":"9fc52936-c6d9-412a-8623-3dea47bf9376","operation":"confirmar_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"rejected"}
+✔ rechazo, expiración y desconexión no despachan la mutación (117.520542ms)
+{"event":"host.tool","correlationId":"54b3f597-ccfd-450e-9cbd-39fb776a4801","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"dispatched"}
+{"event":"host.tool","correlationId":"54b3f597-ccfd-450e-9cbd-39fb776a4801","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"confirmado","durationMs":0}
+{"event":"host.tool","correlationId":"befa21a9-72fa-4558-99d0-5a0b78d3230b","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"dispatched"}
+{"event":"host.tool","correlationId":"befa21a9-72fa-4558-99d0-5a0b78d3230b","tool":"consultar_estado_pedido","operation":"consultar_estado_pedido","pedidoId":"507f1f77bcf86cd799439011","result":"confirmado","durationMs":0}
+✔ límites de mensajes y payload impiden trabajo adicional (17.190375ms)
+✔ resultado autoritativo permanece aunque el modelo contradiga o esté vacío (0.607292ms)
+✔ aprobación web muestra el deadline efectivo restante y parcial no habilita replay (63.44175ms)
+✔ replay fallido o vencido no conserva permiso para otra llamada (0.183ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6936.68575

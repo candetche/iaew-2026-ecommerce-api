@@ -206,8 +206,42 @@ export function createMcpServer({ env = process.env, api = createApiClient({ env
     return result({ status: 'ok', pedidoId: pedido.pedidoId, estado: pedido.estado });
   });
 
-  // TODO T03-B: registrá acá la tool listar_pedidos_pendientes (ver la actividad práctica).
-
+  server.registerTool(
+    "listar_pedidos_pendientes",
+    {
+      description:
+        "Lista como máximo 10 pedidos en estado pendiente, solo con ID y estado. No recibe argumentos.",
+      inputSchema: {},
+      outputSchema: OUTPUT_SCHEMA,
+    },
+    async (_args, extra) => {
+      const correlationId =
+        typeof extra?._meta?.correlationId === "string" &&
+        extra._meta.correlationId.length <= 64
+          ? extra._meta.correlationId
+          : randomUUID();
+      const { response, payload, failure, ambiguous } = await api.request(
+        "/pedidos",
+        {
+          correlationId,
+          operation: "listar_pedidos_pendientes",
+       },
+     );
+      if (failure)
+        return result(
+          errorResultForFailure(failure, "listar_pedidos_pendientes", ambiguous),
+          true,
+        );
+      if (!response.ok)
+        return result(
+          mapApiError(response.status, payload, "listar_pedidos_pendientes"),
+          true,
+        );
+      if (!Array.isArray(payload))
+        return result({ status: "error", code: "API_RESPONSE_INVALID" }, true);
+      return result({ status: "ok", ...mapPendientesFromListado(payload) });
+    },
+  );
   server.registerTool('confirmar_pedido', {
     description: 'Confirma un pedido indicado por el operador; exige aprobación firmada del host y autorización de la API.',
     inputSchema: { pedidoId: z.string() },
@@ -262,15 +296,25 @@ export function createMcpServer({ env = process.env, api = createApiClient({ env
 }
 
 export function mapPendientesFromListado(pedidos) {
-  // TODO T03-C: quedate sólo con los pedidos en estado 'pendiente' y devolvé
-  // { total, pedidos: [{ pedidoId, estado }], truncado } con un máximo de MAX_PENDIENTES.
-  return { total: 0, pedidos: [], truncado: false };
+  const pendientes = pedidos
+    .filter(
+      (item) =>
+        item?.estado === "pendiente" &&
+        typeof item._id === "string" &&
+        ORDER_ID.test(item._id),
+    )
+    .map((item) => ({ pedidoId: item._id, estado: item.estado }));
+  return {
+    total: pendientes.length,
+    pedidos: pendientes.slice(0, MAX_PENDIENTES),
+    truncado: pendientes.length > MAX_PENDIENTES,
+  };
 }
 
 export function mapPedidoFromListado(pedidos, pedidoId) {
-  // TODO T03-A: seleccionar el pedido por _id y proyectar sólo pedidoId y estado.
-  // No devuelvas el documento completo del backend.
-  return undefined;
+  const pedido = pedidos.find((item) => item?._id === pedidoId);
+  if (!pedido || typeof pedido.estado !== "string") return undefined;
+  return { pedidoId, estado: pedido.estado };
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
